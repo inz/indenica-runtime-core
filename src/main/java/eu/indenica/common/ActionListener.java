@@ -10,5 +10,5 @@ import eu.indenica.adaptation.Action;
  *
  */
 public interface ActionListener {
-	void performAction(Action action);
+	void performAction_(Action action);
 }

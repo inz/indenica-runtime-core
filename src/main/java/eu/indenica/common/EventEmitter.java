@@ -11,5 +11,4 @@ import eu.indenica.monitoring.Event;
  */
 public interface EventEmitter {
 	void addEventListener(EventListener listener);
-	void emitEvent(Event event);
 }

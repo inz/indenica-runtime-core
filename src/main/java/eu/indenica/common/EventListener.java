@@ -10,5 +10,5 @@ import eu.indenica.monitoring.Event;
  *
  */
 public interface EventListener extends java.util.EventListener {
-	void processEvent(Event event);
+	void publish(RuntimeComponent source, Event event);
 }

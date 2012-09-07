@@ -24,7 +24,13 @@ import eu.indenica.integration.PlatformAdapter;
 // @XmlSeeAlso()
 public class Event {
 
-	public static class ServiceStartedEvent {
-		public long timestamp;
+	protected String eventType;
+	
+	public Event(String eventType) {
+		this.eventType = eventType;
+	}
+	
+	public String getEventType() {
+		return eventType;
 	}
 }

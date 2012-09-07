@@ -9,6 +9,6 @@ package eu.indenica.common;
  *
  */
 public interface RuntimeComponent {
-	void init() throws Exception;
+	void init(PubSub pubsub) throws Exception;
 	void destroy() throws Exception;
 }

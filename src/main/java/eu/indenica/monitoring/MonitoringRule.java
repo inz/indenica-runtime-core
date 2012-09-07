@@ -26,20 +26,8 @@ import java.util.Collection;
  * 
  * @author Christian Inzinger
  */
-public class MonitoringRule  {
-	protected Collection<Class<? extends Event>> outputEventTypes;
-	protected Collection<StreamDefinition> sources;
-	
-	public static class StreamDefinition {
-		protected Filter filter;
-		protected Window window;
-	}
-	
-	public static class Filter {
-		
-	}
-	
-	public static class Window {
-		
-	}
+public interface MonitoringRule  {
+	Collection<Class<? extends Event>> getOutputEventTypes();
+	Collection<Class<? extends Event>> getInputEventTypes();
+	String getStatement();
 }

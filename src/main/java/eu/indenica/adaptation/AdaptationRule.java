@@ -8,6 +8,6 @@ package eu.indenica.adaptation;
  * @author Christian Inzinger
  *
  */
-public class AdaptationRule {
-
+public interface AdaptationRule {
+	String getExpression();
 }
