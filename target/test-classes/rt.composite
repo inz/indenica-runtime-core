@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tuscany 2
+<composite xmlns="http://docs.oasis-open.org/ns/opencsa/sca/200912"
+           xmlns:tuscany="http://tuscany.apache.org/xmlns/sca/1.1"
+           targetNamespace="http://indenica.eu"
+           name="runtime-contribution">
+-->
+<!-- Tuscany 1 -->
+<composite xmlns="http://www.osoa.org/xmlns/sca/1.0"
+           targetNamespace="http://indenica.eu"
+           name="runtime-contribution">
+
+
+    <component name="Repository">
+        <implementation.java class="eu.indenica.repository.inmemory.SampleInMemoryRepository"/>
+    </component>
+    <component name="BlaAdapter">
+    	<implementation.java class="eu.in...WSComponent"
+    	<service name="asdfa">
+    		<binding.ws />
+    	</service>
+    	<ref n 
+    </component>
+    
+    <component >
+    	<property name="endpointAddress">http://....</property>
+    	
+    </component>
+
+</composite>
