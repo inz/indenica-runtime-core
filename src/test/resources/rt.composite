@@ -14,6 +14,8 @@
     <component name="Repository">
         <implementation.java class="eu.indenica.repository.inmemory.SampleInMemoryRepository"/>
     </component>
+    
+    <!--
     <component name="BlaAdapter">
     	<implementation.java class="eu.in...WSComponent"
     	<service name="asdfa">
@@ -25,6 +27,6 @@
     <component >
     	<property name="endpointAddress">http://....</property>
     	
-    </component>
+    </component>-->
 
 </composite>
