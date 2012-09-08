@@ -1,6 +1,6 @@
 package eu.indenica.common;
 
-import eu.indenica.monitoring.Event;
+import eu.indenica.events.Event;
 
 public interface PubSub {
 	void publish(RuntimeComponent source, Event event);

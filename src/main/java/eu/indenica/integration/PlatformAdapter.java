@@ -17,7 +17,7 @@ import eu.indenica.common.EventEmitter;
 import eu.indenica.common.EventListener;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.RuntimeComponent;
-import eu.indenica.monitoring.Event;
+import eu.indenica.events.Event;
 
 /**
  * The integration interface base class provides for common logic to communicate

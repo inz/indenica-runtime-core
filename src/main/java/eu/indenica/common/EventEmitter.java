@@ -3,7 +3,7 @@
  */
 package eu.indenica.common;
 
-import eu.indenica.monitoring.Event;
+import eu.indenica.events.Event;
 
 /**
  * @author Christian Inzinger

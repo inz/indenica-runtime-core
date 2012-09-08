@@ -13,7 +13,7 @@ import org.drools.runtime.*;
 
 import eu.indenica.common.PubSub;
 import eu.indenica.common.RuntimeComponent;
-import eu.indenica.monitoring.Event;
+import eu.indenica.events.Event;
 
 public class DroolsAdaptationEngine implements AdaptationEngine {
 

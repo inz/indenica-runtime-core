@@ -3,7 +3,7 @@ package eu.indenica.common;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import eu.indenica.monitoring.Event;
+import eu.indenica.events.Event;
 
 public class PubSubImpl implements PubSub, EventListener{
 
