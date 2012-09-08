@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import eu.indenica.events.Event;
 
-public class PubSubImpl implements PubSub, EventListener{
+public class PubSubImpl implements PubSub, EventListener {
 
 	private static PubSubImpl instance;
 	private Collection<ListenerSourceEvent>	listeners;
@@ -25,14 +25,13 @@ public class PubSubImpl implements PubSub, EventListener{
 		for(ListenerSourceEvent lse : listeners) {
 			if ( (lse.source == null || lse.source.equals(source)) &&
 			     (lse.event == null || lse.event.getEventType().equals(event.getEventType())) )
-			     	lse.listener.publish(source, event);
+			     	lse.listener.eventReceived(source, event);
 		}
 	}
 
 	@Override
 	public void publishAll(EventEmitter source) {
 		source.addEventListener(this);
-		
 	}
 
 	@Override
@@ -53,6 +52,13 @@ public class PubSubImpl implements PubSub, EventListener{
 			this.event = event;
 		}
 	}
-	
-	
+
+
+	/* (non-Javadoc)
+	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
+	 */
+	@Override
+	public void eventReceived(RuntimeComponent source, Event event) {
+		publish(source, event);
+	}
 }

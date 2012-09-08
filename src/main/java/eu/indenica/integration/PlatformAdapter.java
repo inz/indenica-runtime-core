@@ -16,7 +16,10 @@ import eu.indenica.common.ActionListener;
 import eu.indenica.common.EventEmitter;
 import eu.indenica.common.EventListener;
 import eu.indenica.common.LoggerFactory;
+import eu.indenica.common.PubSub;
+import eu.indenica.common.PubSubFactory;
 import eu.indenica.common.RuntimeComponent;
+import eu.indenica.events.ActionEvent;
 import eu.indenica.events.Event;
 
 /**
@@ -36,7 +39,7 @@ import eu.indenica.events.Event;
  * 
  */
 public class PlatformAdapter implements RuntimeComponent, EventEmitter,
-		ActionListener {
+		ActionListener, EventListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
 	protected Collection<Class<? extends Event>> emittedEventTypes = Sets
 			.newHashSet();
@@ -49,26 +52,32 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
 
 	@Property
 	protected String endpointAddress;
-	
+
 	@Reference
 	protected WireFormatAdapter wireStrategy;
+	private PubSub pubSub = PubSubFactory.getPubSub();
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see eu.indenica.common.RuntimeComponent#init()
 	 */
 	@Override
 	public void init() throws Exception {
 		LOG.debug("Starting component {}", this);
+		pubSub.registerListener(this, null, new ActionEvent(null));
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see eu.indenica.common.RuntimeComponent#destroy()
 	 */
 	@Override
 	public void destroy() throws Exception {
 		LOG.debug("Stopping component {}", this);
 	}
-	
+
 	/**
 	 * @return the emittedEventTypes
 	 */
@@ -93,10 +102,8 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
 	 * @see
 	 * eu.indenica.common.EventEmitter#emitEvent(eu.indenica.monitoring.Event)
 	 */
-	@Override
 	public void emitEvent(Event event) {
-		for(EventListener listener : eventListeners)
-			listener.processEvent(event);
+		pubSub.publish(this, event);
 	}
 
 	/**
@@ -144,12 +151,25 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
 		this.endpointAddress = endpointAddress;
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.indenica.common.ActionListener#performAction(eu.indenica.adaptation.Action)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * eu.indenica.common.ActionListener#performAction(eu.indenica.adaptation
+	 * .Action)
 	 */
 	@Override
 	public void performAction(Action action) {
 		wireStrategy.performAction(endpointAddress, action);
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see eu.indenica.common.EventListener#publish(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
+	 */
+	@Override
+	public void eventReceived(RuntimeComponent source, Event event) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

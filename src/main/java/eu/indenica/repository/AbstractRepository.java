@@ -9,7 +9,6 @@ package eu.indenica.repository;
 // Tuscany 1:
 import org.osoa.sca.annotations.Destroy;
 import org.osoa.sca.annotations.Init;
-
 import org.slf4j.Logger;
 
 import eu.indenica.common.LoggerFactory;

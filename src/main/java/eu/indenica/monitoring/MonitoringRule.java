@@ -5,6 +5,8 @@ package eu.indenica.monitoring;
 
 import java.util.Collection;
 
+import eu.indenica.events.Event;
+
 /**
  * A monitoring rule is used to analyze monitoring data from underlying
  * platforms and/or other monitoring rules, emits enriched information, and is

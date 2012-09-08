@@ -9,5 +9,5 @@ package eu.indenica.adaptation;
  *
  */
 public interface AdaptationRule {
-	String getExpression();
+	String getStatement();
 }
