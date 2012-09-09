@@ -4,11 +4,11 @@
 package eu.indenica.events;
 
 import eu.indenica.integration.PlatformAdapter;
-import eu.indenica.monitoring.MonitoringRule;
+import eu.indenica.monitoring.MonitoringQuery;
 
 /**
  * This class represents monitoring events emitted by integrated platforms
- * through their {@link PlatformAdapter}s and/or {@link MonitoringRule}s.
+ * through their {@link PlatformAdapter}s and/or {@link MonitoringQuery}s.
  * 
  * <p>
  * An event is a considered a POJO, so developers can easily define custom

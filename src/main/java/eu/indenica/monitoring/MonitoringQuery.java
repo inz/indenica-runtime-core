@@ -20,7 +20,7 @@ import eu.indenica.events.Event;
  * monitoring rule. It consists of a platform {@link Event} type, an optional
  * {@link Filter}, and an optional {@link Window}</dd>
  * <dt>Tags</dt>
- * <dd>{@link Tag}s allow for grouping of {@link MonitoringRule}s into logical components.
+ * <dd>{@link Tag}s allow for grouping of {@link MonitoringQuery}s into logical components.
  * </dd>
  * <dt>Output</dt>
  * <dd>A monitoring rule emits a stream of {@link Event}s.</dd>
@@ -28,7 +28,7 @@ import eu.indenica.events.Event;
  * 
  * @author Christian Inzinger
  */
-public interface MonitoringRule  {
+public interface MonitoringQuery  {
 	Collection<Class<? extends Event>> getOutputEventTypes();
 	Collection<Class<? extends Event>> getInputEventTypes();
 	String getStatement();

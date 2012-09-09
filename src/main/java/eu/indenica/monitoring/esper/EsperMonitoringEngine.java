@@ -29,7 +29,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 	}
 
 	@Override
-	public void addRule(MonitoringRule rule) {
+	public void addRule(MonitoringQuery rule) {
 		EPStatement statement = epService.getEPAdministrator().createEPL(rule.getStatement());
 		statement.addListener(this);
 		//TODO: register for all event types.

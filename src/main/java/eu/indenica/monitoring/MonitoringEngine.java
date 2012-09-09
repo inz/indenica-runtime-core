@@ -11,5 +11,5 @@ import eu.indenica.common.RuntimeComponent;
  *
  */
 public interface MonitoringEngine extends RuntimeComponent, EventListener {
-	void addRule(MonitoringRule rule);
+	void addRule(MonitoringQuery rule);
 }
