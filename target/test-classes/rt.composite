@@ -8,12 +8,27 @@
 <!-- Tuscany 1 -->
 <composite xmlns="http://www.osoa.org/xmlns/sca/1.0"
            targetNamespace="http://indenica.eu"
+           xmlns:m="http://monitoring.indenica.eu"
            name="runtime-contribution">
 
 
     <component name="Repository">
         <implementation.java class="eu.indenica.repository.inmemory.SampleInMemoryRepository"/>
     </component>
+    
+    <component name="MonitoringEngine">
+		<implementation.java 
+			class="eu.indenica.monitoring.esper.EsperMonitoringEngine" />
+		<property name="queries" many="true" type="m:MonitoringQueryImpl">
+			<MonitoringQueryImpl xmlns="">
+				<inputEventTypes>testPkg.EventOne</inputEventTypes>
+				<statement>
+					insert into Foo
+							 select attr1 from EventOne
+				</statement>
+			</MonitoringQueryImpl>
+		</property>
+	</component>
     
     <!--
     <component name="BlaAdapter">

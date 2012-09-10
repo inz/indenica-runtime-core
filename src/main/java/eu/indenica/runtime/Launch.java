@@ -29,15 +29,15 @@ public class Launch {
 	private static Properties config = new Properties(new Properties() {
 		{
 			// Fallback default Configuration
-			setProperty("compositeFilename",
-					System.getProperty("INDENICA_RT_COMPOSITE", "rt.composite"));
+			setProperty("compositeFilename", System.getProperty(
+					"indenica.runtimeCompositeFilename", "rt.composite"));
 		}
 	}) {
 		{
 			try {
 				// load default config.
 				InputStream propIn =
-						getClass().getResourceAsStream("rt.properties");
+						getClass().getResourceAsStream("/rt.properties");
 				load(propIn);
 				propIn.close();
 			} catch(Exception e) {

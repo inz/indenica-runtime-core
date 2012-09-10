@@ -24,7 +24,7 @@ public class PubSubImpl implements PubSub, EventListener {
 	public void publish(RuntimeComponent source, Event event) {
 		for(ListenerSourceEvent lse : listeners) {
 			if ( (lse.source == null || lse.source.equals(source)) &&
-			     (lse.event == null || lse.event.getEventType().equals(event.getEventType())) )
+			     (lse.eventType == null || lse.eventType.equals(event.getEventType())) )
 			     	lse.listener.eventReceived(source, event);
 		}
 	}
@@ -41,15 +41,26 @@ public class PubSubImpl implements PubSub, EventListener {
 		
 	}
 	
+	@Override
+	public void registerListener(EventListener listener,
+			RuntimeComponent source, String eventType) {
+		listeners.add(new ListenerSourceEvent(listener, source, eventType));
+		
+	}
+	
 
 	private class ListenerSourceEvent {
 		EventListener listener;
 		RuntimeComponent source;
-		Event event;
+		String eventType;
 		ListenerSourceEvent(EventListener listener, RuntimeComponent source, Event event) {
+			this(listener, source, event.getEventType());
+		}
+
+		ListenerSourceEvent(EventListener listener, RuntimeComponent source, String eventType) {
 			this.listener = listener;
 			this.source = source;
-			this.event = event;
+			this.eventType = eventType;
 		}
 	}
 

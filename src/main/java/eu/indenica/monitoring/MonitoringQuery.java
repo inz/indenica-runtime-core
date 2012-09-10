@@ -3,9 +3,6 @@
  */
 package eu.indenica.monitoring;
 
-import java.util.Collection;
-
-import eu.indenica.events.Event;
 
 /**
  * A monitoring rule is used to analyze monitoring data from underlying
@@ -17,19 +14,16 @@ import eu.indenica.events.Event;
  * <dl>
  * <dt>Sources</dt>
  * <dd>An event source or stream definition specifies a (named) input of the
- * monitoring rule. It consists of a platform {@link Event} type, an optional
- * {@link Filter}, and an optional {@link Window}</dd>
- * <dt>Tags</dt>
- * <dd>{@link Tag}s allow for grouping of {@link MonitoringQuery}s into logical components.
- * </dd>
+ * monitoring rule. </dd>
  * <dt>Output</dt>
- * <dd>A monitoring rule emits a stream of {@link Event}s.</dd>
+ * <dd>A monitoring rule emits a stream of {@link eu.indenica.events.Event}s.
+ * </dd>
  * </dl>
  * 
  * @author Christian Inzinger
  */
 public interface MonitoringQuery  {
-	Collection<Class<? extends Event>> getOutputEventTypes();
-	Collection<Class<? extends Event>> getInputEventTypes();
+	String[] getOutputEventTypes();
+	String[] getInputEventTypes();
 	String getStatement();
 }

@@ -10,7 +10,9 @@ import org.drools.builder.KnowledgeBuilderFactory;
 import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
+import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Property;
+import org.osoa.sca.annotations.Scope;
 
 import com.google.common.collect.Maps;
 
@@ -20,6 +22,8 @@ import eu.indenica.common.RuntimeComponent;
 import eu.indenica.events.ActionEvent;
 import eu.indenica.events.Event;
 
+@Scope("COMPOSITE")
+@EagerInit
 public class DroolsAdaptationEngine implements AdaptationEngine {
 
 	private PubSub pubsub;
@@ -30,15 +34,33 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	private Map<String, Fact> factBuffer = Maps.newHashMap();
 
 	@Property
-	public String rules;
+	protected String[] rules;
+	
+	@Property
+	protected String[] inputEventTypes;
+	
+	/**
+	 * @param rules the rules to set
+	 */
+	public void setRules(String[] rules) {
+		this.rules = rules;
+	}
+	
+	/**
+	 * @param inputEventTypes the inputEventTypes to set
+	 */
+	public void setInputEventTypes(String[] inputEventTypes) {
+		this.inputEventTypes = inputEventTypes;
+	}
 
 	@Override
 	public void init() throws Exception {
 		this.pubsub = PubSubFactory.getPubSub();
 		knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-		knowledgeBuilder.add(ResourceFactory
-				.newInputStreamResource(new ByteArrayInputStream(rules
-						.getBytes())), ResourceType.DRL);
+		for(String rule : rules)
+			knowledgeBuilder.add(ResourceFactory
+					.newInputStreamResource(new ByteArrayInputStream(rule
+							.getBytes())), ResourceType.DRL);
 		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
 		session = knowledgeBase.newStatefulKnowledgeSession();
 		session.insert(this);
@@ -83,7 +105,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		session.insert(fact);
 	}
 
-	protected void performAction(Action action) {
-		pubsub.publish(this, new ActionEvent(action));
+	protected void performAction(ActionEvent actionEvent) {
+		pubsub.publish(this, actionEvent);
 	}
 }
