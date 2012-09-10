@@ -26,16 +26,17 @@ import eu.indenica.monitoring.MonitoringQueryImpl;
 
 @Scope("COMPOSITE")
 @EagerInit
-@XmlSeeAlso({MonitoringQueryImpl.class})
+@XmlSeeAlso({ MonitoringQueryImpl.class })
 public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
 	private PubSub pubsub;
 	private EPServiceProvider epService;
 
 	private MonitoringQueryImpl[] queries;
-	
+
 	/**
-	 * @param queries the queries to set
+	 * @param queries
+	 *            the queries to set
 	 */
 	@Property
 	public void setQueries(MonitoringQueryImpl[] queries) {
@@ -79,9 +80,9 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 
 			pubsub.registerListener(this, null, eventType);
 		}
-		EPStatement statement =
-				epService.getEPAdministrator().createEPL(query.getStatement());
-		statement.addListener(this);
+		for(String stmt : query.getStatement().trim().split(";")) {
+			epService.getEPAdministrator().createEPL(stmt).addListener(this);
+		}
 	}
 
 	@Override

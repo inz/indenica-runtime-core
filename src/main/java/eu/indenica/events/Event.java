@@ -25,12 +25,21 @@ public class Event {
 
 	protected String eventType;
 	
+	public Event() { }
+	
 	public Event(String eventType) {
 		this.eventType = eventType;
 	}
 	
 	public String getEventType() {
 		return eventType;
+	}
+	
+	/**
+	 * @param eventType the eventType to set
+	 */
+	public void setEventType(String eventType) {
+		this.eventType = eventType;
 	}
 
 	/* (non-Javadoc)
