@@ -94,11 +94,29 @@
 			<version>1.6.2</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tuscany.sca</groupId>
-			<artifactId>tuscany-binding-ws-wsdlgen</artifactId>
-			<version>1.6.2</version>
-		</dependency>
-<!--		<dependency>
+            <groupId>org.apache.tuscany.sca</groupId>
+            <artifactId>tuscany-binding-ws-axis2</artifactId>
+            <version>1.6.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tuscany.sca</groupId>
+            <artifactId>tuscany-host-tomcat</artifactId>
+            <version>1.6.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tuscany.sca</groupId>
+            <artifactId>tuscany-binding-jms-runtime</artifactId>
+            <version>1.6.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tuscany.sca</groupId>
+            <artifactId>tuscany-host-jms-asf</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+		<!--<dependency>
 			<groupId>org.apache.tuscany.sca</groupId>
 			<artifactId>tuscany-databinding-jaxb</artifactId>
 			<version>1.6.2</version>
