@@ -8,6 +8,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
 import org.apache.tuscany.sca.host.embedded.SCADomain;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,7 +19,9 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.Lists;
 
+import eu.indenica.adaptation.Action;
 import eu.indenica.common.LoggerFactory;
+import eu.indenica.events.ActionEvent;
 import eu.indenica.repository.Repository;
 
 /**
@@ -59,6 +64,14 @@ public class RuntimeTest {
 			runtimeNode.close();
 	}
 
+	@Test
+	public void testSerialize() throws Exception {
+		JAXBContext context = JAXBContext.newInstance(ActionEvent.class);
+	    Marshaller m = context.createMarshaller();
+	    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+	    m.marshal(new ActionEvent(new Action()), System.out);
+	}
+	
 	@Test
 	public void testServicesStarted() throws Exception {
 		LOG.debug("Accessing repository...");
