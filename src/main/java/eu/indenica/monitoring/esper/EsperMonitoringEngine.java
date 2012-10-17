@@ -78,6 +78,17 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 				// FIXME: Correctly get RuntimeComponent reference to register.
 			}
 
+			try {
+				Class<?> eventTypeClass = Class.forName(eventType);
+				LOG.info("Loaded class {}", eventTypeClass);
+				epService.getEPAdministrator().getConfiguration()
+						.addEventType(eventTypeClass);
+				epService.getEPAdministrator().getConfiguration()
+						.addImport(eventTypeClass);
+			} catch(ClassNotFoundException e) {
+				LOG.warn("Could not find class {}!", eventType);
+				e.printStackTrace();
+			}
 			pubsub.registerListener(this, null, eventType);
 		}
 		for(String stmt : query.getStatement().trim().split(";")) {
