@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
-import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 
@@ -32,7 +31,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 	private PubSub pubsub;
 	private EPServiceProvider epService;
 
-	private MonitoringQueryImpl[] queries;
+	private MonitoringQuery[] queries;
 
 	/**
 	 * @param queries
