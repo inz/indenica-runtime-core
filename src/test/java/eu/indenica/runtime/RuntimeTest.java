@@ -40,7 +40,7 @@ public class RuntimeTest {
 		// String runtimeLocation =
 		// ContributionLocationHelper
 		// .getContributionLocation("rt.composite");
-		String runtimeLocation = "rt.composite";
+		String runtimeLocation = "runtime.composite";
 
 		// String clientLocation =
 		// ContributionLocationHelper.getContributionLocation("client.composite");

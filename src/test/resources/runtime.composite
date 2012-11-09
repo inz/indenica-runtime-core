@@ -27,6 +27,13 @@
 							 select attr1 from EventOne
 				</statement>
 			</MonitoringQueryImpl>
+			<MonitoringQueryImpl xmlns="">
+				<inputEventTypes>testPkg.EventOne</inputEventTypes>
+				<statement><![CDATA[
+					insert into Foo
+							 select attr1 from EventOne
+				]]></statement>
+			</MonitoringQueryImpl>
 		</property>
 	</component>
     

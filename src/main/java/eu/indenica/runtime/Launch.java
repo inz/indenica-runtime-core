@@ -30,18 +30,18 @@ public class Launch {
 		{
 			// Fallback default Configuration
 			setProperty("compositeFilename", System.getProperty(
-					"indenica.runtimeCompositeFilename", "rt.composite"));
+					"indenica.runtimeCompositeFilename", "runtime.composite"));
 		}
 	}) {
 		{
 			try {
 				// load default config.
 				InputStream propIn =
-						getClass().getResourceAsStream("/rt.properties");
+						getClass().getResourceAsStream("/runtime.properties");
 				load(propIn);
 				propIn.close();
 			} catch(Exception e) {
-				LOG.warn("Could not load default configuration, "
+				LOG.debug("Could not load default configuration, "
 						+ "falling back to factory defaults!");
 			}
 
