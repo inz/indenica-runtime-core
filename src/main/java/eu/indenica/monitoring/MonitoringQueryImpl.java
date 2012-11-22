@@ -61,7 +61,7 @@ public class MonitoringQueryImpl implements MonitoringQuery {
 	 */
 	@Property
 	public void setInputEventTypes(String[] inputEventTypes) {
-		LOG.info("set input event types to {}", inputEventTypes);
+		LOG.debug("Set input event types to {}", inputEventTypes);
 		this.inputEventTypes = inputEventTypes;
 	}
 

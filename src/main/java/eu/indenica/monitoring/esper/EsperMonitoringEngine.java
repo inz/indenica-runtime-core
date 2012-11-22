@@ -45,29 +45,50 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 	@Init
 	@Override
 	public void init() throws Exception {
-		LOG.info("Starting {}", this.getClass().getSimpleName());
+		LOG.debug("Starting {}", this.getClass().getSimpleName());
 		this.pubsub = PubSubFactory.getPubSub();
 		epService = EPServiceProviderManager.getDefaultProvider();
 		for(MonitoringQuery q : queries)
 			addQuery(q);
+		LOG.info("{} started", getClass().getSimpleName());
 	}
 
 	@Destroy
 	@Override
 	public void destroy() throws Exception {
+		LOG.debug("Stopping Monitoring Engine...");
 		epService.removeAllServiceStateListeners();
 		epService.removeAllStatementStateListeners();
 		epService.destroy();
+		LOG.info("Monitoring Engine stopped.");
 	}
 
 	@Override
 	public void eventReceived(RuntimeComponent source, Event event) {
+		LOG.debug("Event {} received from {}", event, source);
 		epService.getEPRuntime().sendEvent(event);
 	}
 
 	@Override
 	public void addQuery(MonitoringQuery query) {
 		LOG.info("Adding query {}", query);
+		registerInputEventTypes(query);
+		addStatements(query);
+	}
+
+	/**
+	 * @param query
+	 */
+	private void addStatements(MonitoringQuery query) {
+		for(String stmt : query.getStatement().trim().split(";")) {
+			epService.getEPAdministrator().createEPL(stmt).addListener(this);
+		}
+	}
+
+	/**
+	 * @param query
+	 */
+	private void registerInputEventTypes(MonitoringQuery query) {
 		for(String eventType : query.getInputEventTypes()) {
 			String source = null;
 			if(eventType.contains(",")) {
@@ -75,6 +96,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 				eventType = split[1].trim();
 				source = split[0].trim();
 				// FIXME: Correctly get RuntimeComponent reference to register.
+				LOG.trace("Found source: {}", source);
 			}
 
 			try {
@@ -90,9 +112,6 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 			}
 			pubsub.registerListener(this, null, eventType);
 		}
-		for(String stmt : query.getStatement().trim().split(";")) {
-			epService.getEPAdministrator().createEPL(stmt).addListener(this);
-		}
 	}
 
 	@Override
@@ -105,6 +124,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 		 * /index.html#functionreference-transpose
 		 */
 		EventBean event = newEvents[0];
+		LOG.info("Publishing event {}", event.getUnderlying());
 		pubsub.publish(this, (Event) event.getUnderlying());
 	}
 
