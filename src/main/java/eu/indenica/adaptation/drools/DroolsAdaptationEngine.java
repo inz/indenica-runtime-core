@@ -1,4 +1,4 @@
-package eu.indenica.adaptation;
+package eu.indenica.adaptation.drools;
 
 import java.io.ByteArrayInputStream;
 import java.util.Map;
@@ -13,9 +13,14 @@ import org.drools.runtime.StatefulKnowledgeSession;
 import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Property;
 import org.osoa.sca.annotations.Scope;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Maps;
 
+import eu.indenica.adaptation.AdaptationEngine;
+import eu.indenica.adaptation.AdaptationRule;
+import eu.indenica.adaptation.Fact;
+import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.common.PubSubFactory;
 import eu.indenica.common.RuntimeComponent;
@@ -25,6 +30,7 @@ import eu.indenica.events.Event;
 @Scope("COMPOSITE")
 @EagerInit
 public class DroolsAdaptationEngine implements AdaptationEngine {
+	private static Logger LOG = LoggerFactory.getLogger();
 
 	private PubSub pubsub;
 	private KnowledgeBase knowledgeBase;
@@ -43,6 +49,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	 * @param rules the rules to set
 	 */
 	public void setRules(String[] rules) {
+		LOG.debug("Setting rules: {}", rules);
 		this.rules = rules;
 	}
 	
@@ -50,11 +57,13 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	 * @param inputEventTypes the inputEventTypes to set
 	 */
 	public void setInputEventTypes(String[] inputEventTypes) {
+		LOG.debug("Setting input event types: {}", inputEventTypes);
 		this.inputEventTypes = inputEventTypes;
 	}
 
 	@Override
 	public void init() throws Exception {
+		LOG.info("Initializing Adaptation Engine...");
 		this.pubsub = PubSubFactory.getPubSub();
 		knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
 		for(String rule : rules)
@@ -64,15 +73,19 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
 		session = knowledgeBase.newStatefulKnowledgeSession();
 		session.insert(this);
+		LOG.debug("Adaptation Engine started.");
 	}
 
 	@Override
 	public void destroy() throws Exception {
+		LOG.debug("Stopping Adaptation Engine...");
 		session.dispose();
+		LOG.info("Adaptation Engine stopped.");
 	}
 
 	@Override
 	public void eventReceived(RuntimeComponent source, Event event) {
+		LOG.debug("Received event {} from {}", source, event);
 		updateFact(event);
 	}
 
@@ -106,6 +119,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	}
 
 	protected void performAction(ActionEvent actionEvent) {
+		LOG.info("Perform action {}", actionEvent);
 		pubsub.publish(this, actionEvent);
 	}
 }
