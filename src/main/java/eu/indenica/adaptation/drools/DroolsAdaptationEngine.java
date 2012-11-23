@@ -91,7 +91,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		}
 		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
 		session = knowledgeBase.newStatefulKnowledgeSession();
-		session.insert(this);
+		session.setGlobal("publisher", this);
 		LOG.debug("Adaptation Engine started.");
 	}
 
@@ -119,6 +119,8 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 			factBuffer.put(event.getEventType(), new Fact());
 			newFact = true;
 		}
+		
+		// TODO: probably need to update fact using session.update();
 
 		Fact fact = factBuffer.get(event.getEventType());
 		fact.setEvent(event);
@@ -138,7 +140,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		session.insert(fact);
 	}
 
-	protected void performAction(ActionEvent actionEvent) {
+	public void performAction(ActionEvent actionEvent) {
 		LOG.info("Perform action {}", actionEvent);
 		pubsub.publish(this, actionEvent);
 	}
