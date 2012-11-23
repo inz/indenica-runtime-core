@@ -61,6 +61,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		this.inputEventTypes = inputEventTypes;
 	}
 
+	@Init
 	@Override
 	public void init() throws Exception {
 		LOG.info("Initializing Adaptation Engine...");
@@ -76,6 +77,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		LOG.debug("Adaptation Engine started.");
 	}
 
+	@Destroy
 	@Override
 	public void destroy() throws Exception {
 		LOG.debug("Stopping Adaptation Engine...");
