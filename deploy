@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Deploy snapshot to github
+
+set -e
+
+pushd $(dirname $0)
+mvn deploy
+pushd ../../github/snapshots
+git add .
+git commit -am "update"
+git push
+popd
+popd
+
+echo "Done."
