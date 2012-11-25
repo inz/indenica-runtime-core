@@ -45,7 +45,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
 	private Map<String, Fact> factBuffer = Maps.newHashMap();
 
-	@Property
+	// @Property
 	protected String[] rules;
 
 	@Property
@@ -60,6 +60,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		this.rules = rules;
 	}
 
+	@Property
 	public void setRules(AdaptationRuleImpl[] rules) {
 		LOG.debug("Setting rules: {}", rules);
 		Collection<String> ruleStatements = Lists.newArrayList();
@@ -89,10 +90,13 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 					.newInputStreamResource(new ByteArrayInputStream(rule
 							.getBytes())), ResourceType.DRL);
 		}
+		LOG.info("Errors: {}", knowledgeBuilder.getErrors());
 		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
+		knowledgeBase.addKnowledgePackages(knowledgeBuilder.getKnowledgePackages());
 		session = knowledgeBase.newStatefulKnowledgeSession();
 		session.setGlobal("publisher", this);
 		LOG.debug("Adaptation Engine started.");
+		session.fireAllRules();
 	}
 
 	@Destroy
@@ -105,7 +109,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
 	@Override
 	public void eventReceived(RuntimeComponent source, Event event) {
-		LOG.debug("Received event {} from {}", source, event);
+		LOG.debug("Received event {} from {}", event, source);
 		updateFact(event);
 	}
 
@@ -119,7 +123,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 			factBuffer.put(event.getEventType(), new Fact());
 			newFact = true;
 		}
-		
+
 		// TODO: probably need to update fact using session.update();
 
 		Fact fact = factBuffer.get(event.getEventType());
