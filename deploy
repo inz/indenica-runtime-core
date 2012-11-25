@@ -5,12 +5,19 @@
 set -e
 
 pushd $(dirname $0)
+
+pushd ../../github/snapshots
+git clean -f
+popd
+
 mvn deploy
+
 pushd ../../github/snapshots
 git add .
 git commit -am "update"
 git push
 popd
+
 popd
 
 echo "Done."
