@@ -14,7 +14,7 @@ import eu.indenica.events.ActionEvent;
 public interface AdaptationEngine extends RuntimeComponent, EventListener {
 	void addRule(AdaptationRule rule);
 	void setFact(Fact fact);
-	void setRules(String[] rules);
-	void setInputEventTypes(String[] inputEventTypes);
+//	void setRules(String[] rules);
+//	void setInputEventTypes(String[] inputEventTypes);
 	void performAction(ActionEvent event);
 }
