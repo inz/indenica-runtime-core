@@ -9,6 +9,7 @@ package eu.indenica.adaptation;
  */
 public class AdaptationRuleImpl implements AdaptationRule {
 	private String statement;
+	private String[] inputEventTypes;
 
 	/* (non-Javadoc)
 	 * @see eu.indenica.adaptation.AdaptationRule#getStatement()
@@ -23,5 +24,20 @@ public class AdaptationRuleImpl implements AdaptationRule {
 	 */
 	public void setStatement(String statement) {
 		this.statement = statement;
+	}
+
+	/* (non-Javadoc)
+	 * @see eu.indenica.adaptation.AdaptationRule#getInputEventTypes()
+	 */
+	@Override
+	public String[] getInputEventTypes() {
+		return this.inputEventTypes;
+	}
+	
+	/**
+	 * @param inputEventTypes the inputEventTypes to set
+	 */
+	public void setInputEventTypes(String[] inputEventTypes) {
+		this.inputEventTypes = inputEventTypes;
 	}
 }

@@ -9,5 +9,6 @@ package eu.indenica.adaptation;
  *
  */
 public interface AdaptationRule {
+	String[] getInputEventTypes();
 	String getStatement();
 }

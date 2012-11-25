@@ -1,8 +1,11 @@
 package eu.indenica.adaptation.drools;
 
 import java.io.ByteArrayInputStream;
-import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
@@ -18,8 +21,6 @@ import org.osoa.sca.annotations.Property;
 import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import eu.indenica.adaptation.AdaptationEngine;
@@ -46,27 +47,24 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	private Map<String, Fact> factBuffer = Maps.newHashMap();
 
 	// @Property
-	protected String[] rules;
+	protected AdaptationRule[] rules;
 
 	@Property
 	protected String[] inputEventTypes;
 
-	/**
-	 * @param rules
-	 *            the rules to set
-	 */
-	public void setRules(String[] rules) {
-		LOG.debug("Setting rules: {}", rules);
-		this.rules = rules;
-	}
+	// /**
+	// * @param rules
+	// * the rules to set
+	// */
+	// public void setRules(String[] rules) {
+	// LOG.debug("Setting rules: {}", rules);
+	// this.rules = rules;
+	// }
 
 	@Property
 	public void setRules(AdaptationRuleImpl[] rules) {
 		LOG.debug("Setting rules: {}", rules);
-		Collection<String> ruleStatements = Lists.newArrayList();
-		for(AdaptationRule rule : rules)
-			ruleStatements.add(rule.getStatement());
-		this.rules = Iterables.toArray(ruleStatements, String.class);
+		this.rules = rules;
 	}
 
 	/**
@@ -84,19 +82,18 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		LOG.info("Initializing Adaptation Engine...");
 		this.pubsub = PubSubFactory.getPubSub();
 		knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-		for(String rule : rules) {
-			LOG.debug("Adding rule: {}", rule);
-			knowledgeBuilder.add(ResourceFactory
-					.newInputStreamResource(new ByteArrayInputStream(rule
-							.getBytes())), ResourceType.DRL);
-		}
-		LOG.info("Errors: {}", knowledgeBuilder.getErrors());
+		for(AdaptationRule rule : rules)
+			addRule(rule);
+
+		if(knowledgeBuilder.getErrors().size() > 0)
+			LOG.error("Errors: {}", knowledgeBuilder.getErrors());
 		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
-		knowledgeBase.addKnowledgePackages(knowledgeBuilder.getKnowledgePackages());
+		knowledgeBase.addKnowledgePackages(knowledgeBuilder
+				.getKnowledgePackages());
 		session = knowledgeBase.newStatefulKnowledgeSession();
 		session.setGlobal("publisher", this);
-		LOG.debug("Adaptation Engine started.");
 		session.fireAllRules();
+		LOG.debug("Adaptation Engine started.");
 	}
 
 	@Destroy
@@ -104,6 +101,9 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	public void destroy() throws Exception {
 		LOG.debug("Stopping Adaptation Engine...");
 		session.dispose();
+		executor.shutdown();
+		// executor.shutdownNow();
+		executor.awaitTermination(2, TimeUnit.SECONDS);
 		LOG.info("Adaptation Engine stopped.");
 	}
 
@@ -136,7 +136,33 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
 	@Override
 	public void addRule(AdaptationRule rule) {
-		throw new UnsupportedOperationException();
+		LOG.debug("Adding rule: {}", rule);
+		knowledgeBuilder.add(ResourceFactory
+				.newInputStreamResource(new ByteArrayInputStream(rule
+						.getStatement().getBytes())), ResourceType.DRL);
+		registerInputEventTypes(rule);
+	}
+
+	/**
+	 * @param rule
+	 */
+	private void registerInputEventTypes(AdaptationRule rule) {
+		if(rule.getInputEventTypes() == null) {
+			LOG.warn("No input events for rule {}", rule);
+			return;
+		}
+		for(String eventType : rule.getInputEventTypes()) {
+			String source = null;
+			if(eventType.contains(",")) {
+				String[] split = eventType.split(",", 2);
+				eventType = split[1].trim();
+				source = split[0].trim();
+				// FIXME: Correctly get RuntimeComponent reference to register.
+				LOG.trace("Found source: {}", source);
+			}
+
+			pubsub.registerListener(this, null, eventType);
+		}
 	}
 
 	@Override
@@ -147,5 +173,19 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	public void performAction(ActionEvent actionEvent) {
 		LOG.info("Perform action {}", actionEvent);
 		pubsub.publish(this, actionEvent);
+	}
+
+	private ExecutorService executor = Executors.newCachedThreadPool();
+
+	public void publishEvent(final Event event) {
+		LOG.info("Publishing event {}", event);
+		final RuntimeComponent component = this;
+		executor.submit(new Callable<Void>() {
+			public Void call() throws Exception {
+				pubsub.publish(component, event);
+				return null;
+			}
+		});
+
 	}
 }
