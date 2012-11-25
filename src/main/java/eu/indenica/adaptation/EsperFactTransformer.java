@@ -9,6 +9,7 @@ import org.osoa.sca.annotations.Destroy;
 import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Init;
 import org.osoa.sca.annotations.Property;
+import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
 import com.espertech.esper.client.EPServiceProvider;
@@ -27,17 +28,18 @@ import eu.indenica.events.Event;
  * 
  */
 @EagerInit
+@Scope("COMPOSITE")
 @XmlSeeAlso({ FactRuleImpl.class })
 public class EsperFactTransformer implements FactTransformer, UpdateListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
-
+	
 	private PubSub pubsub;
 	private EPServiceProvider epService;
 	private FactRule[] rules;
 
 	@Init
 	@Override
-	public void init() {
+	public void init() throws Exception {
 		LOG.debug("Starting {}...", getClass().getSimpleName());
 		this.pubsub = PubSubFactory.getPubSub();
 		epService = EPServiceProviderManager.getDefaultProvider();
