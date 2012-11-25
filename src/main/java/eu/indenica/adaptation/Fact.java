@@ -10,7 +10,7 @@ import eu.indenica.events.Event;
  *
  */
 public class Fact {
-	private Event event;
+	protected Event event;
 	
 	/**
 	 * @return the event
@@ -25,4 +25,12 @@ public class Fact {
 	public void setEvent(Event event) {
 		this.event = event;
 	}
+	
+	/**
+	 * @return the partitionKey
+	 */
+	public Object getPartitionKey() {
+		throw new UnsupportedOperationException();
+	}
+
 }
