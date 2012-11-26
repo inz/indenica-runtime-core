@@ -114,6 +114,8 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 		}
 	}
 
+	private Event previousEvent = null;
+	
 	@Override
 	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
 		// TODO: Create proper event type from rule, result.
@@ -124,6 +126,9 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 		 * /index.html#functionreference-transpose
 		 */
 		EventBean event = newEvents[0];
+		if(event.getUnderlying().equals(previousEvent))
+			return;
+		previousEvent = (Event) event.getUnderlying();
 		LOG.info("Publishing event {}", event.getUnderlying());
 		pubsub.publish(this, (Event) event.getUnderlying());
 	}
