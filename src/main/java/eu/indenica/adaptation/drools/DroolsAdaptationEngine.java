@@ -110,6 +110,8 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	@Override
 	public void eventReceived(RuntimeComponent source, Event event) {
 		LOG.debug("Received event {} from {}", event, source);
+		if(!(event instanceof Fact))
+			LOG.warn("Event received is not fact event!");
 		updateFact(event);
 	}
 
@@ -120,9 +122,11 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	private Fact updateFact(Event event) {
 		boolean newFact = false;
 		if(!factBuffer.containsKey(event.getEventType())) {
-			factBuffer.put(event.getEventType(), new Fact());
+			factBuffer.put(event.getEventType(), (Fact) event);
 			newFact = true;
 		}
+		
+		LOG.info("Update fact {}", event);
 
 		// TODO: probably need to update fact using session.update();
 
@@ -160,13 +164,14 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 				// FIXME: Correctly get RuntimeComponent reference to register.
 				LOG.trace("Found source: {}", source);
 			}
-
+			LOG.debug("Register listener for {} from {}", eventType, source);
 			pubsub.registerListener(this, null, eventType);
 		}
 	}
 
 	@Override
 	public void setFact(Fact fact) {
+		LOG.debug("Add new fact: {}", fact);
 		session.insert(fact);
 	}
 
