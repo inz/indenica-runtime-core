@@ -102,7 +102,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		LOG.debug("Stopping Adaptation Engine...");
 		session.dispose();
 		executor.shutdown();
-		// executor.shutdownNow();
+		executor.shutdownNow();
 		executor.awaitTermination(2, TimeUnit.SECONDS);
 		LOG.info("Adaptation Engine stopped.");
 	}
@@ -175,17 +175,17 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		pubsub.publish(this, actionEvent);
 	}
 
-	private ExecutorService executor = Executors.newCachedThreadPool();
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-	public void publishEvent(final Event event) {
+	public void publishEvent(final Event event) throws Exception {
 		LOG.info("Publishing event {}", event);
 		final RuntimeComponent component = this;
-		executor.submit(new Callable<Void>() {
+		new Callable<Void>() {
 			public Void call() throws Exception {
 				pubsub.publish(component, event);
 				return null;
 			}
-		});
+		}.call();
 
 	}
 }
