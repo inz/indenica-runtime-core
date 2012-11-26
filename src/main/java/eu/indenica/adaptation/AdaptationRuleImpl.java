@@ -3,6 +3,8 @@
  */
 package eu.indenica.adaptation;
 
+import java.util.Arrays;
+
 /**
  * @author Christian Inzinger
  *
@@ -40,4 +42,28 @@ public class AdaptationRuleImpl implements AdaptationRule {
 	public void setInputEventTypes(String[] inputEventTypes) {
 		this.inputEventTypes = inputEventTypes;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder result =
+				new StringBuilder().append("#<")
+						.append(getClass().getSimpleName()).append(":");
+		if(getStatement() != null)
+			result.append(" statement: '")
+					.append(getStatement().replaceAll("\\s+", " ").trim())
+					.append("'");
+
+		if(getInputEventTypes() != null)
+			result.append(", inputEventTypes: ").append(
+					Arrays.toString(getInputEventTypes()));
+
+		result.append(">");
+		return result.toString();
+	}
+
 }
