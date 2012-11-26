@@ -17,6 +17,7 @@ import org.apache.tuscany.sca.host.embedded.SCADomain;
 import org.slf4j.Logger;
 
 import eu.indenica.common.LoggerFactory;
+import eu.indenica.common.PubSubFactory;
 
 /**
  * @author Christian Inzinger
@@ -71,6 +72,7 @@ public class Launch {
 		LOG.info("Shutting down domain...");
 
 		scaDomain.close();
+		PubSubFactory.getPubSub().destroy();
 		// node.stop();
 		LOG.debug("Shutdown complete.");
 	}

@@ -2,14 +2,17 @@ package eu.indenica.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import eu.indenica.events.Event;
 
 public class PubSubImpl implements PubSub, EventListener {
-
 	private static PubSubImpl instance;
 	private Collection<ListenerSourceEvent>	listeners;
-	
+	private ExecutorService notifierPool = Executors.newCachedThreadPool();
 	
 	private PubSubImpl() {
 		listeners = new ArrayList<ListenerSourceEvent>();
@@ -21,11 +24,15 @@ public class PubSubImpl implements PubSub, EventListener {
 	}
 	
 	@Override
-	public void publish(RuntimeComponent source, Event event) {
-		for(ListenerSourceEvent lse : listeners) {
+	public void publish(final RuntimeComponent source, final Event event) {
+		for(final ListenerSourceEvent lse : listeners) {
 			if ( (lse.source == null || lse.source.equals(source)) &&
 			     (lse.eventType == null || lse.eventType.equals(event.getEventType())) )
-			     	lse.listener.eventReceived(source, event);
+			     	notifierPool.submit(new Callable<Void>() {
+						public Void call() throws Exception {
+							lse.listener.eventReceived(source, event);
+							return null;
+						}});
 		}
 	}
 
@@ -71,5 +78,15 @@ public class PubSubImpl implements PubSub, EventListener {
 	@Override
 	public void eventReceived(RuntimeComponent source, Event event) {
 		publish(source, event);
+	}
+
+	/* (non-Javadoc)
+	 * @see eu.indenica.common.PubSub#destroy()
+	 */
+	@Override
+	public void destroy() throws InterruptedException {
+		notifierPool.shutdown();
+		notifierPool.awaitTermination(2, TimeUnit.SECONDS);
+//		notifierPool.shutdownNow();
 	}
 }
