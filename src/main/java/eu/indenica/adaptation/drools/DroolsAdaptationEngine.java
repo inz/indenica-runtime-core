@@ -85,7 +85,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		for(AdaptationRule rule : rules)
 			addRule(rule);
 
-		if(knowledgeBuilder.getErrors().size() > 0)
+		if(knowledgeBuilder.hasErrors())
 			LOG.error("Errors: {}", knowledgeBuilder.getErrors());
 		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
 		knowledgeBase.addKnowledgePackages(knowledgeBuilder
