@@ -9,8 +9,12 @@ import eu.indenica.events.Event;
  * @author Christian Inzinger
  *
  */
-public class Fact {
+public class Fact extends Event {
 	protected Event event;
+	
+	public Fact(String factType) {
+		super(factType);
+	}
 	
 	/**
 	 * @return the event
