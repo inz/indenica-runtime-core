@@ -125,9 +125,9 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
 	@Override
 	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
 		EventBean event = newEvents[0];
-		if(event.getUnderlying().equals(previousEvent))
-			return;
-		previousEvent = (Event) event.getUnderlying();
+//		if(event.getUnderlying().equals(previousEvent))
+//			return;
+//		previousEvent = (Event) event.getUnderlying();
 		LOG.trace("Event object: {}", event);
 		LOG.info("Publishing fact event {}", event.getUnderlying());
 		pubsub.publish(this, (Event) event.getUnderlying());
