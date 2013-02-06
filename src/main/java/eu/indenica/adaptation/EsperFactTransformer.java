@@ -113,7 +113,7 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
 	}
 
 	
-	private Event previousEvent = null;
+//	private Event previousEvent = null;
 	
 	/*
 	 * (non-Javadoc)

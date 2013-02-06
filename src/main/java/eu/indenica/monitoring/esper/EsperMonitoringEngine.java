@@ -129,12 +129,18 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 				newEvents != null ? newEvents.length : 0,
 				oldEvents != null ? oldEvents.length : 0);
 		LOG.trace("newEvents: {}, oldEvents: {}", newEvents, oldEvents);
+		if(newEvents == null) {
+			LOG.info("No new events received.");
+			return;
+		}
+
 		EventBean event = newEvents[0];
-//		LOG.debug("event: {}", event.getUnderlying());
-//		if(event.getUnderlying().equals(previousEvent))
-//			return;
+		// LOG.debug("event: {}", event.getUnderlying());
+		// if(event.getUnderlying().equals(previousEvent))
+		// return;
 		previousEvent = (Event) event.getUnderlying();
-		LOG.info("Publishing event {}", event.getUnderlying());
+		LOG.info("Publishing event {} (previous event: {})",
+				event.getUnderlying(), previousEvent);
 		pubsub.publish(this, (Event) event.getUnderlying());
 	}
 
