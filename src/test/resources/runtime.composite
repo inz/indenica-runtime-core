@@ -11,6 +11,9 @@
            xmlns:m="http://monitoring.indenica.eu"
            name="runtime-contribution">
 
+	<component name="Broker">
+		<implementation.java class="eu.indenica.common.ActivemqPubSub" />
+	</component>
 
     <component name="Repository">
         <implementation.java class="eu.indenica.repository.inmemory.SampleInMemoryRepository"/>
