@@ -7,5 +7,5 @@ public interface PubSub {
 	void publishAll(EventEmitter source);
 	void registerListener(EventListener listener, RuntimeComponent source, Event event);
 	void registerListener(EventListener listener, RuntimeComponent source, String eventType);
-	void destroy() throws InterruptedException;
+	void destroy() throws Exception;
 }
