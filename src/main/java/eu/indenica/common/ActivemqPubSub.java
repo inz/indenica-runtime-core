@@ -89,7 +89,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
 
 			MessageProducer producer = session.createProducer(null);
 			for(String topicName : topicNames) {
-				LOG.trace("Sending {} to topic {}", message, topicName);
+				LOG.trace("Sending {} to topic {}", event, topicName);
 				producer.send(session.createTopic(topicName), message);
 			}
 		} catch(JMSException e) {
