@@ -12,7 +12,7 @@
            name="runtime-contribution">
 
 	<component name="Broker">
-		<implementation.java class="eu.indenica.common.ActivemqPubSub" />
+		<implementation.java class="eu.indenica.messaging.MessageBroker" />
 	</component>
 
     <component name="Repository">

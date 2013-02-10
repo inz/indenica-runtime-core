@@ -36,6 +36,9 @@ public class RuntimeTest {
 	public static void setup() throws Exception {
 		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("root"))
 				.setLevel(ch.qos.logback.classic.Level.TRACE);
+//		((ch.qos.logback.classic.Logger) LoggerFactory
+//				.getLogger("org.apache.activemq"))
+//				.setLevel(ch.qos.logback.classic.Level.INFO);
 
 		// String runtimeLocation =
 		// ContributionLocationHelper
@@ -67,11 +70,11 @@ public class RuntimeTest {
 	@Test
 	public void testSerialize() throws Exception {
 		JAXBContext context = JAXBContext.newInstance(ActionEvent.class);
-	    Marshaller m = context.createMarshaller();
-	    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-	    m.marshal(new ActionEvent(new Action()), System.out);
+		Marshaller m = context.createMarshaller();
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		m.marshal(new ActionEvent(new Action()), System.out);
 	}
-	
+
 	@Test
 	public void testServicesStarted() throws Exception {
 		LOG.debug("Accessing repository...");

@@ -9,6 +9,6 @@ package eu.indenica.common;
  */
 public class PubSubFactory {
 	public static PubSub getPubSub() {
-		return PubSubImpl.getInstance();
+		return ActivemqPubSub.getInstance();
 	}
 }
