@@ -33,10 +33,8 @@ import eu.indenica.messaging.MessageBroker;
  */
 public class ActivemqPubSub implements PubSub, EventListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
-	private final static URI brokerUri = URI.create("discovery:("
-			+ MessageBroker.discoveryUri.toString() + ")");
-	// private final static URI brokerUri = URI.create("vm://localhost");
-	private Connection connection;
+	protected static URI defaultBrokerUri = URI
+			.create("vm://localhost?create=false&waitForStart=2000");
 
 	/**
 	 * @throws Exception
