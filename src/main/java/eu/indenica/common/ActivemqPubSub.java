@@ -201,4 +201,15 @@ public class ActivemqPubSub implements PubSub, EventListener {
 		return instance;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return new StringBuilder().append("#<").append(getClass().getName())
+				.append(": ").append("defaultBrokerUri: ").append(brokerUri)
+				.append(">").toString();
+	}
 }
