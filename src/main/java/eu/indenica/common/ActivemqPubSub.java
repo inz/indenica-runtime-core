@@ -16,13 +16,11 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.osoa.sca.annotations.Init;
 import org.slf4j.Logger;
 
 import com.google.common.collect.Lists;
 
 import eu.indenica.events.Event;
-import eu.indenica.messaging.MessageBroker;
 
 /**
  * Messaging fabric accessing JMS/ActiveMQ embedded brokers and multicast
@@ -35,6 +33,8 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
 	protected static URI defaultBrokerUri = URI
 			.create("vm://localhost?create=false&waitForStart=2000");
+	private final URI brokerUri;
+	private final Connection connection;
 
 	/**
 	 * @throws Exception
@@ -42,14 +42,26 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	 * 
 	 */
 	public ActivemqPubSub() throws Exception {
+		this(defaultBrokerUri);
+	}
+
+	protected ActivemqPubSub(URI brokerUri) throws Exception {
+		this.brokerUri = brokerUri;
+		LOG.info("Connecting to {}...", brokerUri);
 		ActiveMQConnectionFactory connectionFactory =
 				new ActiveMQConnectionFactory(brokerUri);
 		connection = connectionFactory.createConnection();
 		connection.start();
 	}
 
-	@Init
-	public void init() throws JMSException {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see eu.indenica.common.PubSub#destroy()
+	 */
+	@Override
+	public void destroy() throws Exception {
+		connection.close();
 	}
 
 	/*
@@ -157,15 +169,6 @@ public class ActivemqPubSub implements PubSub, EventListener {
 		} catch(JMSException e) {
 			LOG.error("Something went wrong!", e);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.common.PubSub#destroy()
-	 */
-	@Override
-	public void destroy() throws InterruptedException {
 	}
 
 	/*
