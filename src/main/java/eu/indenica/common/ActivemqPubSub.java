@@ -92,6 +92,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
 				LOG.trace("Sending {} to topic {}", event, topicName);
 				producer.send(session.createTopic(topicName), message);
 			}
+			session.close();
 		} catch(JMSException e) {
 			LOG.error("Something went wrong!", e);
 		}
