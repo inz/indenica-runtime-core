@@ -164,11 +164,6 @@
 			<artifactId>activemq-core</artifactId>
 			<version>${activemq.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<version>1.1.1</version>
-		</dependency>
 	</dependencies>
 
 	<url>http://indenica.eu</url>
