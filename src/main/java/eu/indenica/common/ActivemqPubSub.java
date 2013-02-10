@@ -5,39 +5,38 @@ package eu.indenica.common;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
-import org.apache.activemq.network.NetworkConnector;
-import org.apache.activemq.transport.TransportFactory;
-import org.osoa.sca.annotations.EagerInit;
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.osoa.sca.annotations.Init;
-import org.osoa.sca.annotations.Property;
-import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import eu.indenica.events.Event;
+import eu.indenica.messaging.MessageBroker;
 
 /**
+ * Messaging fabric accessing JMS/ActiveMQ embedded brokers and multicast
+ * discovery to deliver messages in a distributed deployment.
+ * 
  * @author Christian Inzinger
  * 
  */
-@EagerInit
-@Scope("COMPOSITE")
-public class ActivemqPubSub implements PubSub {
+public class ActivemqPubSub implements PubSub, EventListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
-	private BrokerService broker;
-	private ExecutorService notifierPool;
-	private String hostname;
-	private int port;
+	private final static URI brokerUri = URI.create("discovery:("
+			+ MessageBroker.discoveryUri.toString() + ")");
+	// private final static URI brokerUri = URI.create("vm://localhost");
+	private Connection connection;
 
 	/**
 	 * @throws Exception
@@ -45,75 +44,14 @@ public class ActivemqPubSub implements PubSub {
 	 * 
 	 */
 	public ActivemqPubSub() throws Exception {
-		notifierPool = Executors.newCachedThreadPool();
-
-		broker = new BrokerService();
-		broker.setPersistent(false);
-
-		TransportConnector connector = new TransportConnector();
-		connector.setUri(new URI("tcp://" + getHostname() + ":" + getPort()));
-		connector.setDiscoveryUri(URI.create("multicast://default"
-				+ "?group=indenica.internal.messaging"));
-		broker.addConnector(connector);
-
-		broker.start();
+		ActiveMQConnectionFactory connectionFactory =
+				new ActiveMQConnectionFactory(brokerUri);
+		connection = connectionFactory.createConnection();
+		connection.start();
 	}
 
 	@Init
-	public void init() {
-	}
-
-	/**
-	 * @return the hostname
-	 */
-	public String getHostname() {
-		if(hostname == null)
-			return "localhost";
-		return hostname;
-	}
-
-	/**
-	 * @param hostname
-	 *            the hostname to set
-	 */
-	@Property
-	public void setHostname(String hostname) {
-		this.hostname = hostname;
-	}
-
-	/**
-	 * @return the port
-	 */
-	public int getPort() {
-		return port;
-	}
-
-	/**
-	 * @param port
-	 *            the port to set
-	 */
-	@Property
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	/**
-	 * @param newPeers
-	 *            the peers to set
-	 */
-	@Property
-	public void setPeers(String[] newPeers) {
-		for(String newPeer : newPeers)
-			connectPeer(newPeer);
-	}
-
-	private void connectPeer(String peerAddress) {
-		try {
-			LOG.info("Connecting to new peer: {}", peerAddress);
-			broker.addNetworkConnector("static://(" + peerAddress + ")");
-		} catch(Exception e) {
-			LOG.error("Failed to connect peer", e);
-		}
+	public void init() throws JMSException {
 	}
 
 	/*
@@ -124,9 +62,29 @@ public class ActivemqPubSub implements PubSub {
 	 * eu.indenica.events.Event)
 	 */
 	@Override
-	public void publish(RuntimeComponent source, Event event) {
-		// TODO Auto-generated method stub
+	public void publish(final RuntimeComponent source, final Event event) {
+		Collection<String> topicNames = Lists.newArrayList();
+		if(source != null) {
+			// FIXME: RuntimeComponents should have name to act as event source
+			topicNames.add(":" + source.getClass().getCanonicalName() + ":"
+					+ event.getEventType());
+		}
+		// Topic for event type (independent of source)
+		topicNames.add("::" + event.getEventType());
+		try {
+			Session session =
+					connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+			Message message = session.createObjectMessage(event);
+
+			MessageProducer producer = session.createProducer(null);
+			for(String topicName : topicNames) {
+				LOG.trace("Sending {} to topic {}", message, topicName);
+				producer.send(session.createTopic(topicName), message);
+			}
+		} catch(JMSException e) {
+			LOG.error("Something went wrong!", e);
+		}
 	}
 
 	/*
@@ -136,9 +94,8 @@ public class ActivemqPubSub implements PubSub {
 	 * eu.indenica.common.PubSub#publishAll(eu.indenica.common.EventEmitter)
 	 */
 	@Override
-	public void publishAll(EventEmitter source) {
-		// TODO Auto-generated method stub
-
+	public void publishAll(final EventEmitter source) {
+		source.addEventListener(this);
 	}
 
 	/*
@@ -149,10 +106,9 @@ public class ActivemqPubSub implements PubSub {
 	 * , eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
 	 */
 	@Override
-	public void registerListener(EventListener listener,
-			RuntimeComponent source, Event event) {
-		// TODO Auto-generated method stub
-
+	public void registerListener(final EventListener listener,
+			final RuntimeComponent source, final Event event) {
+		registerListener(listener, source, event.getEventType());
 	}
 
 	/*
@@ -163,10 +119,46 @@ public class ActivemqPubSub implements PubSub {
 	 * , eu.indenica.common.RuntimeComponent, java.lang.String)
 	 */
 	@Override
-	public void registerListener(EventListener listener,
-			RuntimeComponent source, String eventType) {
-		// TODO Auto-generated method stub
+	public void registerListener(final EventListener listener,
+			final RuntimeComponent source, final String eventType) {
+		String topicName = ":";
 
+		/**
+		 * FIXME: refactor! Use canonical interface to get source name, event
+		 * type name, i.e., topic name
+		 */
+		if(source != null)
+			topicName += source.getClass().getCanonicalName();
+		topicName += ":" + eventType;
+
+		try {
+			LOG.info("Registering listener for {}...", topicName);
+			Session session =
+					connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			MessageConsumer consumer =
+					session.createConsumer(session.createTopic(topicName));
+			consumer.setMessageListener(new MessageListener() {
+				@Override
+				public void onMessage(Message message) {
+					if(!(message instanceof ObjectMessage)) {
+						LOG.error("Received unexpected message: {}", message);
+						throw new RuntimeException("Unexpected message!");
+					}
+
+					try {
+						// FIXME: get source component for event
+						RuntimeComponent source = null;
+						Event receivedEvent =
+								(Event) ((ObjectMessage) message).getObject();
+						listener.eventReceived(source, receivedEvent);
+					} catch(JMSException e) {
+						LOG.error("Could not retrieve object from message", e);
+					}
+				}
+			});
+		} catch(JMSException e) {
+			LOG.error("Something went wrong!", e);
+		}
 	}
 
 	/*
@@ -176,8 +168,35 @@ public class ActivemqPubSub implements PubSub {
 	 */
 	@Override
 	public void destroy() throws InterruptedException {
-		notifierPool.shutdown();
-		notifierPool.awaitTermination(2, TimeUnit.SECONDS);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.
+	 * RuntimeComponent, eu.indenica.events.Event)
+	 */
+	@Override
+	public void eventReceived(final RuntimeComponent source, final Event event) {
+		publish(source, event);
+	}
+
+	private static ActivemqPubSub instance = null;
+
+	/**
+	 * FIXME: factor out broker management into its own class!
+	 * 
+	 * @return An instance of the messaging fabric.
+	 */
+	public static synchronized PubSub getInstance() {
+		if(instance == null) {
+			try {
+				instance = new ActivemqPubSub();
+			} catch(Exception e) {
+				LOG.error("Error creating pubsub instance!", e);
+			}
+		}
+		return instance;
 	}
 
 }
