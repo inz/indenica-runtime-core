@@ -91,6 +91,7 @@ public class MessageBroker {
 
 		connectTcpTransport(broker);
 		connectVmTransport(broker);
+		connectBrokerInterconnect(broker);
 
 		broker.start();
 		connectString = broker.getDefaultSocketURIString();
@@ -184,7 +185,25 @@ public class MessageBroker {
 		broker.setBrokerName(brokerName.toString());
 		return broker;
 	}
-	
+
+	/**
+	 * Connect broker interconnect multicast discovery network connector.
+	 * 
+	 * @param broker
+	 *            the broker to be modified
+	 * @return the broker, modified.
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
+	private static BrokerService
+			connectBrokerInterconnect(BrokerService broker) throws Exception {
+		// NetworkConnector networkConnector =
+		broker.addNetworkConnector(discoveryUri);
+		// networkConnector.setName(UUID.randomUUID().toString());
+		// networkConnector.setSuppressDuplicateTopicSubscriptions(true);
+		// networkConnector.setDuplex(true);
+		return broker;
+	}
 	@Destroy
 	public void destroy() throws Exception {
 		LOG.debug("Shutting down message broker...");
