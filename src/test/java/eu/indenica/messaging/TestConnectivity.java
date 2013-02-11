@@ -134,14 +134,14 @@ public class TestConnectivity {
 
 		LOG.debug("Sending empty message...");
 		defaultPubSub.publish(null, new EventOne());
-		msgWaitLock.acquire();
+		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
 		assertThat(observedEvents.size(), is(1));
 
 		LOG.debug("Sending message w/ content");
 		Event e = new EventOne();
 		((EventOne) e).setAttr1("a value" + System.currentTimeMillis());
 		defaultPubSub.publish(null, e);
-		msgWaitLock.acquire();
+		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
 		assertThat(observedEvents, hasItem(e));
 
 		observedEvents.clear();
@@ -154,7 +154,7 @@ public class TestConnectivity {
 			LOG.debug("Sending message with event: {}...", e);
 			defaultPubSub.publish(null, event);
 		}
-		msgWaitLock.acquire(nEvents);
+		msgWaitLock.tryAcquire(nEvents, 2, TimeUnit.SECONDS);
 		assertThat(observedEvents.size(), is(nEvents));
 	}
 
@@ -175,13 +175,13 @@ public class TestConnectivity {
 		LOG.debug("Send event in same pubsub instance...");
 		Event e = new EventOne();
 		mcastPubSub.publish(null, e);
-		msgWaitLock.acquire();
+		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
 		assertThat(observedEvents, hasItem(e));
 
 		LOG.debug("Send event from defaultPubSub to mcastPubSub...");
 		e = new EventOne();
 		defaultPubSub.publish(null, e);
-		msgWaitLock.acquire();
+		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
 		assertThat(observedEvents, hasItem(e));
 
 		observedEvents.clear();
@@ -191,7 +191,7 @@ public class TestConnectivity {
 		LOG.debug("Send event from defaultPubSub to be received by both...");
 		e = new EventOne();
 		defaultPubSub.publish(null, e);
-		msgWaitLock.acquire(2);
+		msgWaitLock.tryAcquire(2, 2, TimeUnit.SECONDS);
 		assertThat(observedEvents.size(), is(2));
 	}
 
