@@ -36,6 +36,8 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	private final Connection connection;
 
 	/**
+	 * Create and start the messaging infrastructure with default settings.
+	 * 
 	 * @throws Exception
 	 *             when the broker fails to start.
 	 * 
@@ -44,6 +46,15 @@ public class ActivemqPubSub implements PubSub, EventListener {
 		this(defaultBrokerUri);
 	}
 
+	/**
+	 * Create and start the messaging infrastructure connecting to the specified
+	 * broker URI
+	 * 
+	 * @param brokerUri
+	 *            the {@link URI} of the broker to connect to
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
 	protected ActivemqPubSub(URI brokerUri) throws Exception {
 		this.brokerUri = brokerUri;
 		LOG.info("Connecting to {}...", brokerUri);

@@ -239,6 +239,12 @@ public class MessageBroker {
 		});
 	}
 
+	/**
+	 * Shuts down the messaging fabric
+	 * 
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
 	@Destroy
 	public void destroy() throws Exception {
 		LOG.debug("Shutting down message broker...");
@@ -252,6 +258,8 @@ public class MessageBroker {
 	}
 
 	/**
+	 * Returns this machine's host name
+	 * 
 	 * @return the hostname
 	 */
 	public String getHostname() {
@@ -308,6 +316,12 @@ public class MessageBroker {
 			connectPeer(newPeer);
 	}
 
+	/**
+	 * Adds connection to peer broker
+	 * 
+	 * @param peerAddress
+	 *            address of the peer broker
+	 */
 	private void connectPeer(final String peerAddress) {
 		try {
 			LOG.info("Connecting to new peer: {}", peerAddress);
