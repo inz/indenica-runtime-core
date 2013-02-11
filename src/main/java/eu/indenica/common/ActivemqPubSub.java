@@ -4,7 +4,6 @@
 package eu.indenica.common;
 
 import java.net.URI;
-import java.util.Collection;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -18,8 +17,6 @@ import javax.jms.Session;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 
-import com.google.common.collect.Lists;
-
 import eu.indenica.events.Event;
 
 /**
@@ -31,6 +28,8 @@ import eu.indenica.events.Event;
  */
 public class ActivemqPubSub implements PubSub, EventListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
+	public final static String baseTopic = "indenica.event";
+	public final static String pathSeparator = ".";
 	protected static URI defaultBrokerUri = URI
 			.create("vm://localhost?create=false&waitForStart=2000");
 	private final URI brokerUri;
@@ -73,14 +72,13 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	 */
 	@Override
 	public void publish(final RuntimeComponent source, final Event event) {
-		Collection<String> topicNames = Lists.newArrayList();
-		if(source != null) {
-			// FIXME: RuntimeComponents should have name to act as event source
-			topicNames.add(":" + source.getClass().getCanonicalName() + ":"
-					+ event.getEventType());
-		}
-		// Topic for event type (independent of source)
-		topicNames.add("::" + event.getEventType());
+		String topicName =
+				new StringBuilder()
+						.append(baseTopic)
+						.append(pathSeparator)
+						.append(source == null ? "null" : source.getClass()
+								.getName()).append(pathSeparator)
+						.append(event.getEventType()).toString();
 		try {
 			Session session =
 					connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -88,10 +86,8 @@ public class ActivemqPubSub implements PubSub, EventListener {
 			Message message = session.createObjectMessage(event);
 
 			MessageProducer producer = session.createProducer(null);
-			for(String topicName : topicNames) {
-				LOG.trace("Sending {} to topic {}", event, topicName);
-				producer.send(session.createTopic(topicName), message);
-			}
+			LOG.trace("Sending {} to topic {}", event, topicName);
+			producer.send(session.createTopic(topicName), message);
 			session.close();
 		} catch(JMSException e) {
 			LOG.error("Something went wrong!", e);
@@ -132,15 +128,12 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	@Override
 	public void registerListener(final EventListener listener,
 			final RuntimeComponent source, final String eventType) {
-		String topicName = ":";
-
-		/**
-		 * FIXME: refactor! Use canonical interface to get source name, event
-		 * type name, i.e., topic name
-		 */
-		if(source != null)
-			topicName += source.getClass().getCanonicalName();
-		topicName += ":" + eventType;
+		String topicName =
+				new StringBuilder()
+						.append(baseTopic).append(pathSeparator)
+						.append(source == null ? "*" : source.getClass()
+								.getName()).append(pathSeparator)
+						.append(eventType == null ? "*" : eventType).toString();
 
 		try {
 			LOG.info("Registering listener for {}...", topicName);
