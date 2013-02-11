@@ -57,16 +57,25 @@ public class MessageBroker {
 	public final static URI discoveryUri = URI
 			.create("multicast://default?group=" + mcastGroup);
 
+	/**
+	 * The name of the broker to bind with VM transport.
+	 */
+	public final static URI vmTransportUri = URI.create("vm://localhost");
 	private BrokerService broker;
 	private String hostname;
 	private int port;
+	private String connectString;
 
 	/**
+	 * Creates and starts the broker for the messaging fabric.
+	 * 
 	 * @throws Exception
 	 *             if the broker cannot be started
 	 */
 	public MessageBroker() throws Exception {
 		LOG.info("Starting message broker...");
+		LOG.trace("This is broker {} in this VM",
+				VMTransportFactory.SERVERS.size() + 1);
 		broker = new BrokerService();
 		setBrokerName(broker);
 		broker.setPersistent(false);
@@ -79,6 +88,16 @@ public class MessageBroker {
 		 * multiple brokers running on one machine.
 		 */
 		managementContext.setConnectorPort(getFreePort());
+
+		connectTcpTransport(broker);
+		connectVmTransport(broker);
+
+		broker.start();
+		connectString = broker.getDefaultSocketURIString();
+
+
+		LOG.info("Broker {} started.", broker.getBrokerName());
+	}
 
 	/**
 	 * This method finds a free port on the machine.
@@ -98,13 +117,52 @@ public class MessageBroker {
 		}
 		return port;
 	}
+
+	/**
+	 * Connect the TCP transport for the given broker.
+	 * 
+	 * @param broker
+	 *            the broker to be modified
+	 * @return the broker, after modification
+	 * @throws URISyntaxException
+	 *             if hostname and/or port were invalid
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
+	private BrokerService connectTcpTransport(BrokerService broker)
+			throws URISyntaxException, Exception {
 		TransportConnector connector = new TransportConnector();
 		connector.setUri(new URI("tcp://" + getHostname() + ":" + getPort()));
 		connector.setDiscoveryUri(discoveryUri);
 		broker.addConnector(connector);
-		broker.addConnector("vm://localhost");
+		return broker;
+	}
 
-		broker.start();
+	/**
+	 * Connects the VM transport for the given broker.
+	 * 
+	 * The VM transport will only be added if no other broker in the current VM
+	 * offers it.
+	 * 
+	 * @param broker
+	 *            the broker to be modified
+	 * @return the modified broker
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
+	@SuppressWarnings("unused")
+	private static BrokerService connectVmTransport(BrokerService broker)
+			throws Exception {
+		/**
+		 * Only connect VM transport if we're the first broker in this VM
+		 */
+		if(!VMTransportFactory.SERVERS.containsKey(vmTransportUri.getHost())) {
+			broker.addConnector(vmTransportUri);
+		} else {
+			LOG.warn("Could not bind VM transport. Is another broker running?");
+		}
+		return broker;
+	}
 
 	/**
 	 * Sets unique name for this broker.
@@ -172,6 +230,13 @@ public class MessageBroker {
 	@Property
 	public void setPort(final int port) {
 		this.port = port;
+	}
+
+	/**
+	 * @return the connectString
+	 */
+	public String getConnectString() {
+		return connectString;
 	}
 
 	/**
