@@ -17,7 +17,6 @@ import com.espertech.esper.client.UpdateListener;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.common.PubSubFactory;
-import eu.indenica.common.RuntimeComponent;
 import eu.indenica.events.Event;
 import eu.indenica.monitoring.MonitoringEngine;
 import eu.indenica.monitoring.MonitoringQuery;
@@ -64,7 +63,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 	}
 
 	@Override
-	public void eventReceived(RuntimeComponent source, Event event) {
+	public void eventReceived(String source, Event event) {
 		LOG.debug("Event {} received from {}", event, source);
 		epService.getEPRuntime().sendEvent(event);
 	}
@@ -141,7 +140,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 		previousEvent = (Event) event.getUnderlying();
 		LOG.info("Publishing event {} (previous event: {})",
 				event.getUnderlying(), previousEvent);
-		pubsub.publish(this, (Event) event.getUnderlying());
+		pubsub.publish(this.getClass().getName(), (Event) event.getUnderlying());
 	}
 
 }

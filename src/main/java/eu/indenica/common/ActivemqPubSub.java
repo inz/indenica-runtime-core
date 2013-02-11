@@ -13,6 +13,7 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import javax.jms.Topic;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	 * eu.indenica.events.Event)
 	 */
 	@Override
-	public void publish(final RuntimeComponent source, final Event event) {
+	public void publish(final String source, final Event event) {
 		String topicName =
 				new StringBuilder()
 						.append(baseTopic)
@@ -163,7 +164,9 @@ public class ActivemqPubSub implements PubSub, EventListener {
 
 					try {
 						// FIXME: get source component for event
-						RuntimeComponent source = null;
+						String source =
+								((Topic) message.getJMSDestination())
+										.getTopicName();
 						Event receivedEvent =
 								(Event) ((ObjectMessage) message).getObject();
 						listener.eventReceived(source, receivedEvent);
@@ -184,16 +187,14 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	 * RuntimeComponent, eu.indenica.events.Event)
 	 */
 	@Override
-	public void eventReceived(final RuntimeComponent source, final Event event) {
+	public void eventReceived(final String source, final Event event) {
 		publish(source, event);
 	}
 
 	private static ActivemqPubSub instance = null;
 
 	/**
-	 * FIXME: factor out broker management into its own class!
-	 * 
-	 * @return An instance of the messaging fabric.
+	 * @return An instance of the messaging client fabric.
 	 */
 	public static synchronized PubSub getInstance() {
 		if(instance == null) {

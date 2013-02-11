@@ -103,7 +103,7 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
 	 * eu.indenica.common.EventEmitter#emitEvent(eu.indenica.monitoring.Event)
 	 */
 	public void emitEvent(Event event) {
-		pubSub.publish(this, event);
+		pubSub.publish(this.getName(), event);
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
 	 * @see eu.indenica.common.EventListener#publish(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
 	 */
 	@Override
-	public void eventReceived(RuntimeComponent source, Event event) {
+	public void eventReceived(String source, Event event) {
 		// TODO Auto-generated method stub
 		
 	}

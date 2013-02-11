@@ -24,7 +24,7 @@ public class PubSubImpl implements PubSub, EventListener {
 	}
 	
 	@Override
-	public void publish(final RuntimeComponent source, final Event event) {
+	public void publish(final String source, final Event event) {
 		for(final ListenerSourceEvent lse : listeners) {
 			if ( (lse.source == null || lse.source.equals(source)) &&
 			     (lse.eventType == null || lse.eventType.equals(event.getEventType())) )
@@ -76,7 +76,7 @@ public class PubSubImpl implements PubSub, EventListener {
 	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
 	 */
 	@Override
-	public void eventReceived(RuntimeComponent source, Event event) {
+	public void eventReceived(String source, Event event) {
 		publish(source, event);
 	}
 

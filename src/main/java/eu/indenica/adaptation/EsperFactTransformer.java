@@ -20,7 +20,6 @@ import com.espertech.esper.client.UpdateListener;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.common.PubSubFactory;
-import eu.indenica.common.RuntimeComponent;
 import eu.indenica.events.Event;
 
 /**
@@ -130,14 +129,14 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
 //		previousEvent = (Event) event.getUnderlying();
 		LOG.trace("Event object: {}", event);
 		LOG.info("Publishing fact event {}", event.getUnderlying());
-		pubsub.publish(this, (Event) event.getUnderlying());
+		pubsub.publish(this.getClass().getName(), (Event) event.getUnderlying());
 	}
 
 	/* (non-Javadoc)
 	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
 	 */
 	@Override
-	public void eventReceived(RuntimeComponent source, Event event) {
+	public void eventReceived(String source, Event event) {
 		LOG.debug("Event {} received from {}", event, source);
 		epService.getEPRuntime().sendEvent(event);
 	}

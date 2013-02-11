@@ -30,7 +30,6 @@ import eu.indenica.adaptation.Fact;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.common.PubSubFactory;
-import eu.indenica.common.RuntimeComponent;
 import eu.indenica.events.ActionEvent;
 import eu.indenica.events.Event;
 
@@ -108,7 +107,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 	}
 
 	@Override
-	public void eventReceived(RuntimeComponent source, Event event) {
+	public void eventReceived(String source, Event event) {
 		LOG.debug("Received event {} from {}", event, source);
 		if(!(event instanceof Fact))
 			LOG.warn("Event received is not fact event!");
@@ -177,14 +176,14 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
 	public void performAction(ActionEvent actionEvent) {
 		LOG.info("Perform action {}", actionEvent);
-		pubsub.publish(this, actionEvent);
+		pubsub.publish(this.getClass().getName(), actionEvent);
 	}
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	public void publishEvent(final Event event) throws Exception {
 		LOG.info("Publishing event {}", event);
-		final RuntimeComponent component = this;
+		final String component = this.getClass().getName();
 		new Callable<Void>() {
 			public Void call() throws Exception {
 				pubsub.publish(component, event);

@@ -10,5 +10,5 @@ import eu.indenica.events.Event;
  *
  */
 public interface EventListener extends java.util.EventListener {
-	void eventReceived(RuntimeComponent source, Event event);
+	void eventReceived(String sourceComponent, Event event);
 }

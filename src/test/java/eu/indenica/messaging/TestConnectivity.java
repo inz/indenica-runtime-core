@@ -25,7 +25,6 @@ import eu.indenica.common.ActivemqPubSub;
 import eu.indenica.common.EventListener;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
-import eu.indenica.common.RuntimeComponent;
 import eu.indenica.events.Event;
 
 /**
@@ -328,7 +327,7 @@ public class TestConnectivity {
 						"createEvent") ? 3 : 2].getMethodName();
 		pubSub.registerListener(new EventListener() {
 			@Override
-			public void eventReceived(RuntimeComponent source, Event event) {
+			public void eventReceived(String source, Event event) {
 				LOG.debug("{} Received event {} in {} from {}, in {}",
 						new Object[] { caller, event, pubSub, source });
 				observedEvents.add(event);
