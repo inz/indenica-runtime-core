@@ -130,7 +130,8 @@ public class ActivemqPubSub implements PubSub, EventListener {
 			final RuntimeComponent source, final String eventType) {
 		String topicName =
 				new StringBuilder()
-						.append(baseTopic).append(pathSeparator)
+						.append(baseTopic)
+						.append(pathSeparator)
 						.append(source == null ? "*" : source.getClass()
 								.getName()).append(pathSeparator)
 						.append(eventType == null ? "*" : eventType).toString();
