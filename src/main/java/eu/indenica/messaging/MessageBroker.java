@@ -51,6 +51,7 @@ public class MessageBroker {
 	 * each other.
 	 */
 	public final static String mcastGroup = "indenica.internal.messaging";
+
 	/**
 	 * The broker network's discovery URI
 	 */
@@ -61,10 +62,16 @@ public class MessageBroker {
 	 * The name of the broker to bind with VM transport.
 	 */
 	public final static URI vmTransportUri = URI.create("vm://localhost");
+
+	private static final String ANNOUNCEMENTS_TOPIC_NAME =
+			"control.announcements";
+
 	private BrokerService broker;
 	private String hostname;
 	private int port;
 	private String connectString;
+	private Connection announcementsConnection;
+	private ExecutorService announcements = Executors.newSingleThreadExecutor();
 
 	/**
 	 * Creates and starts the broker for the messaging fabric.
@@ -96,6 +103,7 @@ public class MessageBroker {
 		broker.start();
 		connectString = broker.getDefaultSocketURIString();
 
+		connectAnnouncementListener();
 
 		LOG.info("Broker {} started.", broker.getBrokerName());
 	}
@@ -204,10 +212,69 @@ public class MessageBroker {
 		// networkConnector.setDuplex(true);
 		return broker;
 	}
+
+	/**
+	 * Listens to new broker announcements.
+	 * 
+	 * (Now mostly here to ensure proper n-way communication between brokers)
+	 * 
+	 * @throws JMSException
+	 *             if something goes wrong
+	 */
+	private void connectAnnouncementListener() throws JMSException {
+		LOG.debug("Connecting announcement listener at {}", connectString);
+		announcementsConnection =
+				new ActiveMQConnectionFactory(connectString).createConnection();
+		announcementsConnection.start();
+
+		announcements.submit(new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				Session session =
+						announcementsConnection.createSession(false,
+								Session.AUTO_ACKNOWLEDGE);
+				MessageConsumer consumer =
+						session.createConsumer(session
+								.createTopic(ANNOUNCEMENTS_TOPIC_NAME));
+				consumer.setMessageListener(new MessageListener() {
+					@Override
+					public void onMessage(Message message) {
+						String brokerName = broker.getBrokerName();
+						String newBrokerName = null;
+						try {
+							newBrokerName =
+									message.getStringProperty("brokerName");
+						} catch(JMSException e) {
+							LOG.error("Could not understand message!", e);
+						}
+						if(!brokerName.equals(newBrokerName))
+							LOG.info("ANN ({}): Broker {} joined.", brokerName,
+									newBrokerName);
+
+					}
+				});
+
+				MessageProducer producer =
+						session.createProducer(session
+								.createTopic(ANNOUNCEMENTS_TOPIC_NAME));
+				Message announcement = session.createMapMessage();
+				announcement.setStringProperty("brokerName",
+						broker.getBrokerName());
+				producer.send(announcement);
+				return null;
+			}
+		});
+	}
+
 	@Destroy
 	public void destroy() throws Exception {
 		LOG.debug("Shutting down message broker...");
 		broker.stop();
+		announcements.shutdown();
+		if(!announcements.awaitTermination(2, TimeUnit.SECONDS))
+			announcements.shutdownNow();
+		if(announcementsConnection != null)
+			announcementsConnection.close();
 		LOG.info("Message broker shut down.");
 	}
 
