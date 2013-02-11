@@ -50,6 +50,7 @@ public class MessageBroker {
 	public MessageBroker() throws Exception {
 		LOG.info("Starting message broker...");
 		broker = new BrokerService();
+		setBrokerName(broker);
 		broker.setPersistent(false);
 		broker.getSystemUsage().getTempUsage().setLimit(1024000);
 
@@ -61,6 +62,25 @@ public class MessageBroker {
 
 		broker.start();
 
+	/**
+	 * Sets unique name for this broker.
+	 * 
+	 * @param broker
+	 *            the broker needing a name
+	 * @return the broker
+	 */
+	private BrokerService setBrokerName(BrokerService broker) {
+		StringBuilder brokerName = new StringBuilder().append(mcastGroup);
+		brokerName.append(".").append(getHostname());
+		brokerName.append(".").append(VMTransportFactory.SERVERS.size());
+		/**
+		 * FIXME: As long as it creates the persistent store (which it should
+		 * not) giving a UUID as broker name will fill up your disk in 32MB
+		 * increments. Also, broker names should be consistent across restarts.
+		 */
+		// brokerName.append(UUID.randomUUID().toString());
+		broker.setBrokerName(brokerName.toString());
+		return broker;
 	}
 	
 	@Destroy
