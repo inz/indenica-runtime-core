@@ -97,7 +97,6 @@ public class MessageBroker {
 		managementContext.setConnectorPort(getFreePort());
 
 		connectTcpTransport(broker);
-		connectVmTransport(broker);
 		connectBrokerInterconnect(broker);
 
 		broker.start();
@@ -144,32 +143,6 @@ public class MessageBroker {
 		connector.setUri(new URI("tcp://" + getHostname() + ":" + getPort()));
 		connector.setDiscoveryUri(discoveryUri);
 		broker.addConnector(connector);
-		return broker;
-	}
-
-	/**
-	 * Connects the VM transport for the given broker.
-	 * 
-	 * The VM transport will only be added if no other broker in the current VM
-	 * offers it.
-	 * 
-	 * @param broker
-	 *            the broker to be modified
-	 * @return the modified broker
-	 * @throws Exception
-	 *             if something goes wrong
-	 */
-	@SuppressWarnings("unused")
-	private static BrokerService connectVmTransport(BrokerService broker)
-			throws Exception {
-		/**
-		 * Only connect VM transport if we're the first broker in this VM
-		 */
-		if(!VMTransportFactory.SERVERS.containsKey(vmTransportUri.getHost())) {
-			broker.addConnector(vmTransportUri);
-		} else {
-			LOG.warn("Could not bind VM transport. Is another broker running?");
-		}
 		return broker;
 	}
 
