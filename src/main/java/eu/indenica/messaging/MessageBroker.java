@@ -3,11 +3,29 @@
  */
 package eu.indenica.messaging;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
+import org.apache.activemq.broker.jmx.ManagementContext;
+import org.apache.activemq.transport.vm.VMTransportFactory;
 import org.osoa.sca.annotations.Destroy;
 import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Property;
@@ -52,8 +70,34 @@ public class MessageBroker {
 		broker = new BrokerService();
 		setBrokerName(broker);
 		broker.setPersistent(false);
-		broker.getSystemUsage().getTempUsage().setLimit(1024000);
+		// broker.setUseJmx(false);
+		broker.getSystemUsage().getTempUsage().setLimit(1024 * 1000); // 1000kB
+		ManagementContext managementContext = broker.getManagementContext();
 
+		/**
+		 * Set unique free port for management connector in case there are
+		 * multiple brokers running on one machine.
+		 */
+		managementContext.setConnectorPort(getFreePort());
+
+	/**
+	 * This method finds a free port on the machine.
+	 * 
+	 * <b>NOTE:</b> There is a possible race condition here!
+	 * 
+	 * @return a free port
+	 */
+	private int getFreePort() {
+		int port = 1099 + VMTransportFactory.SERVERS.size();
+		try {
+			ServerSocket socket = new ServerSocket(0);
+			port = socket.getLocalPort();
+			socket.close();
+		} catch(IOException e) {
+			LOG.warn("Could not find free port, falling back to default.", e);
+		}
+		return port;
+	}
 		TransportConnector connector = new TransportConnector();
 		connector.setUri(new URI("tcp://" + getHostname() + ":" + getPort()));
 		connector.setDiscoveryUri(discoveryUri);
