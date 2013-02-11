@@ -31,7 +31,7 @@ import eu.indenica.events.Event;
 @XmlSeeAlso({ FactRuleImpl.class })
 public class EsperFactTransformer implements FactTransformer, UpdateListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
-	
+
 	private PubSub pubsub;
 	private EPServiceProvider epService;
 	private FactRule[] rules;
@@ -47,7 +47,9 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
 		LOG.info("{} started", getClass().getSimpleName());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see eu.indenica.common.RuntimeComponent#destroy()
 	 */
 	@Destroy
@@ -111,9 +113,8 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
 		}
 	}
 
-	
-//	private Event previousEvent = null;
-	
+	// private Event previousEvent = null;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -124,16 +125,19 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
 	@Override
 	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
 		EventBean event = newEvents[0];
-//		if(event.getUnderlying().equals(previousEvent))
-//			return;
-//		previousEvent = (Event) event.getUnderlying();
+		// if(event.getUnderlying().equals(previousEvent))
+		// return;
+		// previousEvent = (Event) event.getUnderlying();
 		LOG.trace("Event object: {}", event);
 		LOG.info("Publishing fact event {}", event.getUnderlying());
 		pubsub.publish(this.getClass().getName(), (Event) event.getUnderlying());
 	}
 
-	/* (non-Javadoc)
-	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.
+	 * RuntimeComponent, eu.indenica.events.Event)
 	 */
 	@Override
 	public void eventReceived(String source, Event event) {

@@ -85,12 +85,10 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	@Override
 	public void publish(final String source, final Event event) {
 		String topicName =
-				new StringBuilder()
-						.append(baseTopic)
-						.append(pathSeparator)
-						.append(source == null ? "null" : source.getClass()
-								.getName()).append(pathSeparator)
-						.append(event.getEventType()).toString();
+				new StringBuilder().append(baseTopic).append(pathSeparator)
+						.append(source == null ? "null" : source)
+						.append(pathSeparator).append(event.getEventType())
+						.toString();
 		try {
 			Session session =
 					connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
