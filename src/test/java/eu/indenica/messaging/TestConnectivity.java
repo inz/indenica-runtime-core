@@ -52,7 +52,8 @@ public class TestConnectivity {
 	 * @author Christian Inzinger
 	 */
 	public static class EventOne extends Event {
-		private static long typeId = System.currentTimeMillis();
+		private static final long serialVersionUID = 2114845083753269316L;
+		private static final long typeId = System.currentTimeMillis();
 		private String attr1;
 		private int anAttribute;
 
