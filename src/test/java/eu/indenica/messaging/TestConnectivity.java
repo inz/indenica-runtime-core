@@ -136,14 +136,14 @@ public class TestConnectivity {
 
 		LOG.debug("Sending empty message...");
 		defaultPubSub.publish(null, new EventOne());
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents.size(), is(1));
 
 		LOG.debug("Sending message w/ content");
 		Event e = new EventOne();
 		((EventOne) e).setAttr1("a value" + System.currentTimeMillis());
 		defaultPubSub.publish(null, e);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(e));
 
 		observedEvents.clear();
@@ -178,13 +178,13 @@ public class TestConnectivity {
 		LOG.debug("Send event in same pubsub instance...");
 		Event e = new EventOne();
 		mcastPubSub.publish(null, e);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(e));
 
 		LOG.debug("Send event from defaultPubSub to mcastPubSub...");
 		e = new EventOne();
 		defaultPubSub.publish(null, e);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(e));
 
 		observedEvents.clear();
@@ -218,7 +218,7 @@ public class TestConnectivity {
 		LOG.info("Sending message from new broker to new broker...");
 		Event event = new EventOne();
 		secondPubSub.publish(null, event);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(event));
 
 		msgWaitLock.drainPermits();
@@ -227,7 +227,7 @@ public class TestConnectivity {
 		LOG.info("Sending message from new broker to default broker...");
 		event = new EventOne();
 		secondPubSub.publish(null, event);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(event));
 
 		msgWaitLock.drainPermits();
@@ -235,7 +235,7 @@ public class TestConnectivity {
 		LOG.info("Sending message from default broker to new broker...");
 		event = new EventOne();
 		defaultPubSub.publish(null, event);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(event));
 
 		secondPubSub.destroy();
@@ -267,7 +267,7 @@ public class TestConnectivity {
 		LOG.info("Sending message from new broker to new broker...");
 		Event event = new EventOne();
 		secondPubSub.publish(null, event);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(event));
 
 		msgWaitLock.drainPermits();
@@ -275,7 +275,7 @@ public class TestConnectivity {
 		LOG.info("Sending message from default broker to new broker...");
 		event = new EventOne();
 		defaultPubSub.publish(null, event);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(event));
 
 		msgWaitLock.drainPermits();
@@ -284,7 +284,7 @@ public class TestConnectivity {
 		LOG.info("Sending message from new broker to default broker...");
 		event = new EventOne();
 		secondPubSub.publish(null, event);
-		msgWaitLock.tryAcquire(2, TimeUnit.SECONDS);
+		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 		assertThat(observedEvents, hasItem(event));
 
 		secondPubSub.destroy();
