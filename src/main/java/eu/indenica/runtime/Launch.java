@@ -4,22 +4,29 @@
 package eu.indenica.runtime;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 
-// Tuscany 2
-//import org.apache.tuscany.sca.node.Contribution;
-//import org.apache.tuscany.sca.node.ContributionLocationHelper;
-//import org.apache.tuscany.sca.node.Node;
-//import org.apache.tuscany.sca.node.NodeFactory;
-// Tuscany 1
 import org.apache.tuscany.sca.host.embedded.SCADomain;
-
 import org.slf4j.Logger;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSubFactory;
+import eu.indenica.integration.PlatformAdapter;
+import eu.indenica.messaging.MessageBroker;
 
 /**
+ * This is the runtime entry point and will start an Indenica runtime instance
+ * with the supplied configuration.
+ * 
+ * Manages SCA components ({@link PlatformAdapter}s) as well as auxiliary
+ * services, such as messaging fabric and control infrastructure.
+ * 
  * @author Christian Inzinger
  * 
  */
@@ -49,12 +56,34 @@ public class Launch {
 		}
 	};
 
-	public static void main(String[] args) throws Exception {
-		String configFilename = config.getProperty("compositeFilename");
-		LOG.debug("Starting domain for composite '{}'...", configFilename);
+	private MessageBroker messageBroker;
 
-		// SCADomain is apparently only available in tuscany 1.x
-		SCADomain scaDomain = SCADomain.newInstance(configFilename);
+	/**
+	 * Known SCA domains
+	 */
+	private Collection<SCADomain> domains;
+
+	/**
+	 * Creates a runtime instance and starts auxiliary components.
+	 * 
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
+	public Launch() throws Exception {
+		domains = Lists.newArrayList();
+		domains = Collections.synchronizedCollection(domains);
+		messageBroker = new MessageBroker();
+	}
+
+	/**
+	 * Loads a contribution from the specified composite file.
+	 * 
+	 * @param composite
+	 *            the composite to load
+	 */
+	public void loadContribution(String composite) {
+		LOG.info("Adding contribution {}...", composite);
+		SCADomain domain = SCADomain.newInstance(composite);
 
 		// Tuscany 2
 		// String contribution =
@@ -65,15 +94,88 @@ public class Launch {
 		// new Contribution("test", contribution));
 		// node.start();
 
+		LOG.debug("Node for {} started.", composite);
+		domains.add(domain);
+	}
+
+	/**
+	 * Returns the names of all known components.
+	 * 
+	 * @return the names of all known components
+	 */
+	public Set<String> getComponentNames() {
+		Set<String> result = Sets.newHashSet();
+		synchronized(domains) {
+			for(SCADomain domain : domains)
+				result.addAll(domain.getComponentManager().getComponentNames());
+		}
+		return result;
+	}
+
+	/**
+	 * Returns a proxy for a service provided by a loaded SCA component.
+	 * 
+	 * @see SCADomain#getService(Class, String)
+	 * @param businessInterface
+	 *            the interface used to access the service
+	 * @param serviceName
+	 *            the service name
+	 * @return a proxy object implementing the supplied interface
+	 */
+	public <T> T getService(Class<? extends T> businessInterface,
+			String serviceName) {
+		synchronized(domains) {
+			for(SCADomain domain : domains) {
+				if(domain.getComponentManager().getComponentNames()
+						.contains(serviceName))
+					return domain.getService(businessInterface, serviceName);
+			}
+		}
+		LOG.warn("Service '{}' not found.", serviceName);
+		return null;
+	}
+
+	/**
+	 * Stops the runtime.
+	 * 
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
+	public void destroy() throws Exception {
+		synchronized(domains) {
+			for(SCADomain domain : domains)
+				domain.close();
+		}
+
+		PubSubFactory.getPubSub().destroy();
+		messageBroker.destroy();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#finalize()
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		destroy();
+		super.finalize();
+	}
+
+	public static void main(String[] args) throws Exception {
+		String configFilename = config.getProperty("compositeFilename");
+		LOG.debug("Starting domain for composite '{}'...", configFilename);
+
+		Launch runtime = new Launch();
+		runtime.loadContribution(configFilename);
+
 		LOG.info("Domain for composite '{}' started. Press any key to quit.",
 				configFilename);
 
 		System.in.read();
-		LOG.info("Shutting down domain...");
+		LOG.info("Shutting down runtime...");
 
-		scaDomain.close();
-		PubSubFactory.getPubSub().destroy();
-		// node.stop();
+		runtime.destroy();
 		LOG.debug("Shutdown complete.");
 	}
 }

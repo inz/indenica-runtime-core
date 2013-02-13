@@ -30,7 +30,7 @@ import eu.indenica.repository.Repository;
 public class RuntimeTest {
 	private final static Logger LOG = LoggerFactory.getLogger();
 	// private static Node runtimeNode;
-	private static SCADomain runtimeNode;
+	private static Launch runtimeNode;
 
 	@BeforeClass
 	public static void setup() throws Exception {
@@ -55,16 +55,17 @@ public class RuntimeTest {
 		// );
 		// runtimeNode.start();
 
-		runtimeNode = SCADomain.newInstance(runtimeLocation);
+		runtimeNode = new Launch();
+		runtimeNode.loadContribution(runtimeLocation);
 		LOG.debug("Node started ({}).", runtimeNode);
+		LOG.info("Components: {}", runtimeNode.getComponentNames());
 	}
 
 	@AfterClass
 	public static void teardown() throws Exception {
 		LOG.debug("Stopping node...");
 		if(runtimeNode != null)
-			// runtimeNode.stop();
-			runtimeNode.close();
+			runtimeNode.destroy();
 	}
 
 	@Test
