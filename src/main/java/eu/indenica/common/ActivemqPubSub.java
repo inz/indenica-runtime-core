@@ -124,7 +124,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	 */
 	@Override
 	public void registerListener(final EventListener listener,
-			final RuntimeComponent source, final Event event) {
+			final String source, final Event event) {
 		registerListener(listener, source, event.getEventType());
 	}
 
@@ -137,13 +137,11 @@ public class ActivemqPubSub implements PubSub, EventListener {
 	 */
 	@Override
 	public void registerListener(final EventListener listener,
-			final RuntimeComponent source, final String eventType) {
+			final String source, final String eventType) {
 		String topicName =
-				new StringBuilder()
-						.append(baseTopic)
+				new StringBuilder().append(baseTopic).append(pathSeparator)
+						.append(source == null ? "*" : source)
 						.append(pathSeparator)
-						.append(source == null ? "*" : source.getClass()
-								.getName()).append(pathSeparator)
 						.append(eventType == null ? "*" : eventType).toString();
 
 		try {

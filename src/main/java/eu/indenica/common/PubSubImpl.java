@@ -43,14 +43,14 @@ public class PubSubImpl implements PubSub, EventListener {
 
 	@Override
 	public void registerListener(EventListener listener,
-			RuntimeComponent source, Event event) {
+			String source, Event event) {
 		listeners.add(new ListenerSourceEvent(listener, source, event));
 		
 	}
 	
 	@Override
 	public void registerListener(EventListener listener,
-			RuntimeComponent source, String eventType) {
+			String source, String eventType) {
 		listeners.add(new ListenerSourceEvent(listener, source, eventType));
 		
 	}
@@ -58,13 +58,13 @@ public class PubSubImpl implements PubSub, EventListener {
 
 	private class ListenerSourceEvent {
 		EventListener listener;
-		RuntimeComponent source;
+		String source;
 		String eventType;
-		ListenerSourceEvent(EventListener listener, RuntimeComponent source, Event event) {
+		ListenerSourceEvent(EventListener listener, String source, Event event) {
 			this(listener, source, event.getEventType());
 		}
 
-		ListenerSourceEvent(EventListener listener, RuntimeComponent source, String eventType) {
+		ListenerSourceEvent(EventListener listener, String source, String eventType) {
 			this.listener = listener;
 			this.source = source;
 			this.eventType = eventType;
