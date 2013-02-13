@@ -23,6 +23,7 @@ package eu.indenica.monitoring;
  * @author Christian Inzinger
  */
 public interface MonitoringQuery  {
+	String getName();
 	String[] getOutputEventTypes();
 	String[] getInputEventTypes();
 	String getStatement();

@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import eu.indenica.common.LoggerFactory;
 
 /**
+ * Default monitoring query implementation
+ * 
  * @author Christian Inzinger
  * 
  */
@@ -20,15 +22,28 @@ import eu.indenica.common.LoggerFactory;
 public class MonitoringQueryImpl implements MonitoringQuery {
 	private final static Logger LOG = LoggerFactory.getLogger();
 
+	protected String name;
 	protected String[] inputEventTypes;
-
 	protected String[] outputEventTypes;
-
 	protected String statement;
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
+	 * @see eu.indenica.monitoring.MonitoringQuery#getName()
+	 */
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	/**
 	 * @see eu.indenica.monitoring.MonitoringQuery#getOutputEventTypes()
 	 */
 	@Override
@@ -45,9 +60,7 @@ public class MonitoringQueryImpl implements MonitoringQuery {
 		this.outputEventTypes = outputEventTypes;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see eu.indenica.monitoring.MonitoringQuery#getInputEventTypes()
 	 */
 	@Override
@@ -65,9 +78,7 @@ public class MonitoringQueryImpl implements MonitoringQuery {
 		this.inputEventTypes = inputEventTypes;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see eu.indenica.monitoring.MonitoringQuery#getStatement()
 	 */
 	@Override
@@ -84,9 +95,7 @@ public class MonitoringQueryImpl implements MonitoringQuery {
 		this.statement = statement;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
