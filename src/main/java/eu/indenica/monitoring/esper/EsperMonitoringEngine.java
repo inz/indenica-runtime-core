@@ -23,9 +23,13 @@ import eu.indenica.monitoring.MonitoringEngine;
 import eu.indenica.monitoring.MonitoringQuery;
 import eu.indenica.monitoring.MonitoringQueryImpl;
 
-@Scope("COMPOSITE")
-@EagerInit
-@XmlSeeAlso({ MonitoringQueryImpl.class })
+/**
+ * A monitoring engine implementation using the Esper CEP engine.
+ * @author Christian Inzinger
+ */
+//@EagerInit
+//@Scope("COMPOSITE")
+//@XmlSeeAlso({ MonitoringQueryImpl.class })
 public class EsperMonitoringEngine implements MonitoringEngine,
 		StatementAwareUpdateListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
@@ -47,10 +51,11 @@ public class EsperMonitoringEngine implements MonitoringEngine,
 	@Override
 	public void init() throws Exception {
 		LOG.debug("Starting {}", this.getClass().getSimpleName());
-		this.pubsub = PubSubFactory.getPubSub();
+		pubsub = PubSubFactory.getPubSub();
 		epService = EPServiceProviderManager.getDefaultProvider();
-		for(MonitoringQuery q : queries)
-			addQuery(q);
+		if(queries != null)
+			for(MonitoringQuery q : queries)
+				addQuery(q);
 		LOG.info("{} started", getClass().getSimpleName());
 	}
 
@@ -58,6 +63,7 @@ public class EsperMonitoringEngine implements MonitoringEngine,
 	@Override
 	public void destroy() throws Exception {
 		LOG.debug("Stopping Monitoring Engine...");
+		pubsub.destroy();
 		epService.removeAllServiceStateListeners();
 		epService.removeAllStatementStateListeners();
 		epService.destroy();
@@ -75,6 +81,22 @@ public class EsperMonitoringEngine implements MonitoringEngine,
 		LOG.info("Adding query {}", query);
 		registerInputEventTypes(query);
 		addStatement(query);
+	}
+	
+	/**
+	 * @see eu.indenica.monitoring.MonitoringEngine#startQuery(java.lang.String)
+	 */
+	@Override
+	public void startQuery(String queryName) {
+		epService.getEPAdministrator().getStatement(queryName).stop();
+	}
+	
+	/**
+	 * @see eu.indenica.monitoring.MonitoringEngine#stopQuery(java.lang.String)
+	 */
+	@Override
+	public void stopQuery(String queryName) {
+		epService.getEPAdministrator().getStatement(queryName).start();
 	}
 
 	/**
