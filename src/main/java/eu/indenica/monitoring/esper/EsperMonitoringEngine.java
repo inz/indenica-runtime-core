@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
+import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
+import com.espertech.esper.client.StatementAwareUpdateListener;
 
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
@@ -25,7 +26,8 @@ import eu.indenica.monitoring.MonitoringQueryImpl;
 @Scope("COMPOSITE")
 @EagerInit
 @XmlSeeAlso({ MonitoringQueryImpl.class })
-public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
+public class EsperMonitoringEngine implements MonitoringEngine,
+		StatementAwareUpdateListener {
 	private final static Logger LOG = LoggerFactory.getLogger();
 	private PubSub pubsub;
 	private EPServiceProvider epService;
@@ -72,20 +74,26 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 	public void addQuery(MonitoringQuery query) {
 		LOG.info("Adding query {}", query);
 		registerInputEventTypes(query);
-		addStatements(query);
+		addStatement(query);
 	}
 
 	/**
+	 * Add the given {@link MonitoringQuery} to the monitoring engine
+	 * 
 	 * @param query
+	 *            the query to be added
 	 */
-	private void addStatements(MonitoringQuery query) {
-		for(String stmt : query.getStatement().trim().split(";")) {
-			epService.getEPAdministrator().createEPL(stmt).addListener(this);
-		}
+	private void addStatement(MonitoringQuery query) {
+		epService.getEPAdministrator()
+				.createEPL(query.getStatement(), query.getName())
+				.addListener(this);
 	}
 
 	/**
+	 * Register all input event types of the given {@link MonitoringQuery}.
+	 * 
 	 * @param query
+	 *            the query to register input event types for
 	 */
 	private void registerInputEventTypes(MonitoringQuery query) {
 		for(String eventType : query.getInputEventTypes()) {
@@ -94,7 +102,6 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 				String[] split = eventType.split(",", 2);
 				eventType = split[1].trim();
 				source = split[0].trim();
-				// FIXME: Correctly get RuntimeComponent reference to register.
 				LOG.trace("Found source: {}", source);
 			}
 
@@ -109,14 +116,15 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 				LOG.warn("Could not find class {}!", eventType);
 				e.printStackTrace();
 			}
-			pubsub.registerListener(this, null, eventType);
+			pubsub.registerListener(this, source, eventType);
 		}
 	}
 
 	private Event previousEvent = null;
 
 	@Override
-	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+	public void update(EventBean[] newEvents, EventBean[] oldEvents,
+			EPStatement statement, EPServiceProvider epServiceProvider) {
 		// TODO: Create proper event type from rule, result.
 		/**
 		 * Rule: + list of attributes/how to re-create event transform rule!.
@@ -140,7 +148,7 @@ public class EsperMonitoringEngine implements MonitoringEngine, UpdateListener {
 		previousEvent = (Event) event.getUnderlying();
 		LOG.info("Publishing event {} (previous event: {})",
 				event.getUnderlying(), previousEvent);
-		pubsub.publish(this.getClass().getName(), (Event) event.getUnderlying());
+		pubsub.publish(statement.getName(), (Event) event.getUnderlying());
 	}
 
 }
