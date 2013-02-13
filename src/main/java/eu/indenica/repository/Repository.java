@@ -18,14 +18,14 @@ import eu.indenica.common.RuntimeComponent;
  */
 @Remotable
 public interface Repository extends RuntimeComponent {
-	@GET
-	@Path("{q}")
-	String[] query(@PathParam("{q}") String query);
+    @GET
+    @Path("{q}")
+    String[] query(@PathParam("{q}") String query);
 
-	@POST
-	void store(String jsonString);
+    @POST
+    void store(String jsonString);
 
-	@DELETE
-	@Path("{id}")
-	void delete(@PathParam("{id}") String id);
+    @DELETE
+    @Path("{id}")
+    void delete(@PathParam("{id}") String id);
 }

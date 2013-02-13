@@ -7,34 +7,35 @@ import eu.indenica.events.Event;
 
 /**
  * @author Christian Inzinger
- *
+ * 
  */
 public class Fact extends Event {
-	protected Event event;
-	
-	public Fact(String factType) {
-		super(factType);
-	}
-	
-	/**
-	 * @return the event
-	 */
-	public Event getEvent() {
-		return event;
-	}
-	
-	/**
-	 * @param event the event to set
-	 */
-	public void setEvent(Event event) {
-		this.event = event;
-	}
-	
-	/**
-	 * @return the partitionKey
-	 */
-	public Object getPartitionKey() {
-		throw new UnsupportedOperationException();
-	}
+    protected Event event;
+
+    public Fact(String factType) {
+        super(factType);
+    }
+
+    /**
+     * @return the event
+     */
+    public Event getEvent() {
+        return event;
+    }
+
+    /**
+     * @param event
+     *            the event to set
+     */
+    public void setEvent(Event event) {
+        this.event = event;
+    }
+
+    /**
+     * @return the partitionKey
+     */
+    public Object getPartitionKey() {
+        throw new UnsupportedOperationException();
+    }
 
 }

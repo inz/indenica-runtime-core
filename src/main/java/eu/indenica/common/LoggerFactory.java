@@ -24,39 +24,39 @@ import org.slf4j.Logger;
  * 
  */
 public class LoggerFactory {
-	/**
-	 * Returns a logger named after the name of the calling class.
-	 * 
-	 * @return a logger named after the calling class.
-	 */
-	public static Logger getLogger() {
-		return getLogger(new Exception().getStackTrace()[1].getClassName());
-	}
+    /**
+     * Returns a logger named after the name of the calling class.
+     * 
+     * @return a logger named after the calling class.
+     */
+    public static Logger getLogger() {
+        return getLogger(new Exception().getStackTrace()[1].getClassName());
+    }
 
-	/**
-	 * @see org.slf4j.LoggerFactory#getLogger(Class)
-	 * 
-	 * @param clazz
-	 *            the returned logger will be named after clazz
-	 * @return the logger
-	 */
-	public static Logger getLogger(Class<?> clazz) {
-		return getLogger(clazz.getName());
-	}
+    /**
+     * @see org.slf4j.LoggerFactory#getLogger(Class)
+     * 
+     * @param clazz
+     *            the returned logger will be named after clazz
+     * @return the logger
+     */
+    public static Logger getLogger(Class<?> clazz) {
+        return getLogger(clazz.getName());
+    }
 
-	/**
-	 * @param name
-	 *            the name of the logger
-	 * @return the logger
-	 * @see org.slf4j.LoggerFactory#getLogger(String)
-	 */
-	public static Logger getLogger(String name) {
-		return org.slf4j.LoggerFactory.getLogger(name);
-	}
+    /**
+     * @param name
+     *            the name of the logger
+     * @return the logger
+     * @see org.slf4j.LoggerFactory#getLogger(String)
+     */
+    public static Logger getLogger(String name) {
+        return org.slf4j.LoggerFactory.getLogger(name);
+    }
 
-	/**
-	 * Private constructor to prevent initialization.
-	 */
-	private LoggerFactory() {
-	}
+    /**
+     * Private constructor to prevent initialization.
+     */
+    private LoggerFactory() {
+    }
 }

@@ -21,32 +21,32 @@ import eu.indenica.repository.Repository;
  * 
  */
 public class InMemoryRepositoryTest {
-	private Repository repository = null;
+    private Repository repository = null;
 
-	@Before
-	public void setup() {
-		repository = new SampleInMemoryRepository();
-	}
+    @Before
+    public void setup() {
+        repository = new SampleInMemoryRepository();
+    }
 
-	@Test
-	public void testAddSimpleObjects() {
-		int nObjects = 99;
-		{
-			for(int i = 0; i < nObjects; i++) {
-				String testObj = "foobar" + i;
-				repository.store(testObj);
-				Collection<String> result =
-						Lists.newArrayList(repository.query(".*"));
-				assertThat(result, hasItem(testObj));
-			}
-			assertThat(repository.query(".*").length, is(nObjects));
-		}
-		{
-			Collection<String> result =
-					Lists.newArrayList(repository.query("foobar5"));
+    @Test
+    public void testAddSimpleObjects() {
+        int nObjects = 99;
+        {
+            for(int i = 0; i < nObjects; i++) {
+                String testObj = "foobar" + i;
+                repository.store(testObj);
+                Collection<String> result =
+                        Lists.newArrayList(repository.query(".*"));
+                assertThat(result, hasItem(testObj));
+            }
+            assertThat(repository.query(".*").length, is(nObjects));
+        }
+        {
+            Collection<String> result =
+                    Lists.newArrayList(repository.query("foobar5"));
 
-			assertThat(result.size(), is(1));
-			assertThat(result, hasItem("foobar5"));
-		}
-	}
+            assertThat(result.size(), is(1));
+            assertThat(result, hasItem("foobar5"));
+        }
+    }
 }

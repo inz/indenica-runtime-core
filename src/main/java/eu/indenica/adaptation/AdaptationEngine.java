@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package eu.indenica.adaptation;
 
@@ -9,12 +9,14 @@ import eu.indenica.events.ActionEvent;
 
 /**
  * @author Christian Inzinger
- *
+ * 
  */
 public interface AdaptationEngine extends RuntimeComponent, EventListener {
-	void addRule(AdaptationRule rule);
-	void setFact(Fact fact);
-//	void setRules(String[] rules);
-//	void setInputEventTypes(String[] inputEventTypes);
-	void performAction(ActionEvent event);
+    void addRule(AdaptationRule rule);
+
+    void setFact(Fact fact);
+
+    // void setRules(String[] rules);
+    // void setInputEventTypes(String[] inputEventTypes);
+    void performAction(ActionEvent event);
 }

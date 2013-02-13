@@ -16,62 +16,62 @@ import eu.indenica.messaging.TestConnectivity.EventOne;
  * 
  */
 public class TestUtils {
-	private final static Logger LOG = (Logger) LoggerFactory.getLogger();
-	
-	/**
-	 * Set sensible logging levels, i.e. crank up our test logs, tone down
-	 * everything else.
-	 */
-	public static void setLogLevels() {
-		((Logger) LoggerFactory.getLogger("root")).setLevel(Level.INFO);
-		((Logger) LoggerFactory.getLogger("eu.indenica")).setLevel(Level.TRACE);
-	}
+    private final static Logger LOG = (Logger) LoggerFactory.getLogger();
 
-	/**
-	 * Creates a default event listener for {@link EventOne}
-	 * 
-	 * @param pubSub
-	 *            the messaging fabric to use
-	 * @param observedEvents
-	 *            a collection to put received events in
-	 * @param msgWaitLock
-	 *            a semaphore to lock for external synchronization
-	 */
-	public static void
-			createEventListener(final PubSub pubSub,
-					final Collection<Event> observedEvents,
-					final Semaphore msgWaitLock) {
-		createEventListener(pubSub, new EventOne().getEventType(),
-				observedEvents, msgWaitLock);
-	}
+    /**
+     * Set sensible logging levels, i.e. crank up our test logs, tone down
+     * everything else.
+     */
+    public static void setLogLevels() {
+        ((Logger) LoggerFactory.getLogger("root")).setLevel(Level.INFO);
+        ((Logger) LoggerFactory.getLogger("eu.indenica")).setLevel(Level.TRACE);
+    }
 
-	/**
-	 * Creates an event listener for the specified event type.
-	 * 
-	 * @param pubSub
-	 *            the messaging fabric to use
-	 * @param eventType
-	 *            the event type to listen for
-	 * @param observedEvents
-	 *            a collection to put received events in
-	 * @param msgWaitLock
-	 *            a semaphore to lock for external synchronization
-	 */
-	public static void createEventListener(final PubSub pubSub,
-			final String eventType, final Collection<Event> observedEvents,
-			final Semaphore msgWaitLock) {
-		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		final String caller =
-				stackTrace[stackTrace[2].getMethodName().startsWith(
-						"createEvent") ? 3 : 2].getMethodName();
-		pubSub.registerListener(new EventListener() {
-			@Override
-			public void eventReceived(String source, Event event) {
-				LOG.debug("{} - Received event {} in {} from {}",
-						new Object[] { caller, event, pubSub, source });
-				observedEvents.add(event);
-				msgWaitLock.release();
-			}
-		}, null, eventType);
-	}
+    /**
+     * Creates a default event listener for {@link EventOne}
+     * 
+     * @param pubSub
+     *            the messaging fabric to use
+     * @param observedEvents
+     *            a collection to put received events in
+     * @param msgWaitLock
+     *            a semaphore to lock for external synchronization
+     */
+    public static void
+            createEventListener(final PubSub pubSub,
+                    final Collection<Event> observedEvents,
+                    final Semaphore msgWaitLock) {
+        createEventListener(pubSub, new EventOne().getEventType(),
+                observedEvents, msgWaitLock);
+    }
+
+    /**
+     * Creates an event listener for the specified event type.
+     * 
+     * @param pubSub
+     *            the messaging fabric to use
+     * @param eventType
+     *            the event type to listen for
+     * @param observedEvents
+     *            a collection to put received events in
+     * @param msgWaitLock
+     *            a semaphore to lock for external synchronization
+     */
+    public static void createEventListener(final PubSub pubSub,
+            final String eventType, final Collection<Event> observedEvents,
+            final Semaphore msgWaitLock) {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        final String caller =
+                stackTrace[stackTrace[2].getMethodName().startsWith(
+                        "createEvent") ? 3 : 2].getMethodName();
+        pubSub.registerListener(new EventListener() {
+            @Override
+            public void eventReceived(String source, Event event) {
+                LOG.debug("{} - Received event {} in {} from {}", new Object[] {
+                        caller, event, pubSub, source });
+                observedEvents.add(event);
+                msgWaitLock.release();
+            }
+        }, null, eventType);
+    }
 }

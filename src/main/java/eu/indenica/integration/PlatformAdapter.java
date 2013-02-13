@@ -39,137 +39,141 @@ import eu.indenica.events.Event;
  * 
  */
 public class PlatformAdapter implements RuntimeComponent, EventEmitter,
-		ActionListener, EventListener {
-	private final static Logger LOG = LoggerFactory.getLogger();
-	protected Collection<Class<? extends Event>> emittedEventTypes = Sets
-			.newHashSet();
-	protected Collection<Class<? extends Action>> adaptationActions = Sets
-			.newHashSet();
-	protected Collection<EventListener> eventListeners = Sets.newHashSet();
+        ActionListener, EventListener {
+    private final static Logger LOG = LoggerFactory.getLogger();
+    protected Collection<Class<? extends Event>> emittedEventTypes = Sets
+            .newHashSet();
+    protected Collection<Class<? extends Action>> adaptationActions = Sets
+            .newHashSet();
+    protected Collection<EventListener> eventListeners = Sets.newHashSet();
 
-	protected String id;
-	protected String name;
+    protected String id;
+    protected String name;
 
-	@Property
-	protected String endpointAddress;
+    @Property
+    protected String endpointAddress;
 
-	@Reference
-	protected WireFormatAdapter wireStrategy;
-	private PubSub pubSub = PubSubFactory.getPubSub();
+    @Reference
+    protected WireFormatAdapter wireStrategy;
+    private PubSub pubSub = PubSubFactory.getPubSub();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.common.RuntimeComponent#init()
-	 */
-	@Override
-	public void init() throws Exception {
-		LOG.debug("Starting component {}", this);
-		pubSub.registerListener(this, null, new ActionEvent(null));
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.common.RuntimeComponent#init()
+     */
+    @Override
+    public void init() throws Exception {
+        LOG.debug("Starting component {}", this);
+        pubSub.registerListener(this, null, new ActionEvent(null));
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.common.RuntimeComponent#destroy()
-	 */
-	@Override
-	public void destroy() throws Exception {
-		LOG.debug("Stopping component {}", this);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.common.RuntimeComponent#destroy()
+     */
+    @Override
+    public void destroy() throws Exception {
+        LOG.debug("Stopping component {}", this);
+    }
 
-	/**
-	 * @return the emittedEventTypes
-	 */
-	public Collection<Class<? extends Event>> getEmittedEventTypes() {
-		return emittedEventTypes;
-	}
+    /**
+     * @return the emittedEventTypes
+     */
+    public Collection<Class<? extends Event>> getEmittedEventTypes() {
+        return emittedEventTypes;
+    }
 
-	/**
-	 * @return the adaptationActions
-	 */
-	public Collection<Class<? extends Action>> getAdaptationActions() {
-		return adaptationActions;
-	}
+    /**
+     * @return the adaptationActions
+     */
+    public Collection<Class<? extends Action>> getAdaptationActions() {
+        return adaptationActions;
+    }
 
-	public void addEventListener(EventListener listener) {
-		eventListeners.add(listener);
-	}
+    public void addEventListener(EventListener listener) {
+        eventListeners.add(listener);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * eu.indenica.common.EventEmitter#emitEvent(eu.indenica.monitoring.Event)
-	 */
-	public void emitEvent(Event event) {
-		pubSub.publish(this.getName(), event);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * eu.indenica.common.EventEmitter#emitEvent(eu.indenica.monitoring.Event)
+     */
+    public void emitEvent(Event event) {
+        pubSub.publish(this.getName(), event);
+    }
 
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return id;
+    }
 
-	/**
-	 * @param id
-	 *            the id to set
-	 */
-	protected void setId(String id) {
-		this.id = id;
-	}
+    /**
+     * @param id
+     *            the id to set
+     */
+    protected void setId(String id) {
+        this.id = id;
+    }
 
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
 
-	/**
-	 * @param name
-	 *            the name to set
-	 */
-	protected void setName(String name) {
-		this.name = name;
-	}
+    /**
+     * @param name
+     *            the name to set
+     */
+    protected void setName(String name) {
+        this.name = name;
+    }
 
-	/**
-	 * @return the endpointAddress
-	 */
-	public String getEndpointAddress() {
-		return endpointAddress;
-	}
+    /**
+     * @return the endpointAddress
+     */
+    public String getEndpointAddress() {
+        return endpointAddress;
+    }
 
-	/**
-	 * @param endpointAddress
-	 *            the endpointAddress to set
-	 */
-	public void setEndpointAddress(String endpointAddress) {
-		this.endpointAddress = endpointAddress;
-	}
+    /**
+     * @param endpointAddress
+     *            the endpointAddress to set
+     */
+    public void setEndpointAddress(String endpointAddress) {
+        this.endpointAddress = endpointAddress;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * eu.indenica.common.ActionListener#performAction(eu.indenica.adaptation
-	 * .Action)
-	 */
-	@Override
-	public void performAction(Action action) {
-		wireStrategy.performAction(endpointAddress, action);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * eu.indenica.common.ActionListener#performAction(eu.indenica.adaptation
+     * .Action)
+     */
+    @Override
+    public void performAction(Action action) {
+        wireStrategy.performAction(endpointAddress, action);
+    }
 
-	/* (non-Javadoc)
-	 * @see eu.indenica.common.EventListener#publish(eu.indenica.common.RuntimeComponent, eu.indenica.events.Event)
-	 */
-	@Override
-	public void eventReceived(String source, Event event) {
-		// TODO Auto-generated method stub
-		
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * eu.indenica.common.EventListener#publish(eu.indenica.common.RuntimeComponent
+     * , eu.indenica.events.Event)
+     */
+    @Override
+    public void eventReceived(String source, Event event) {
+        // TODO Auto-generated method stub
+
+    }
 
 }

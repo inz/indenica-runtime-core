@@ -9,9 +9,9 @@ import eu.indenica.events.Event;
 
 /**
  * @author Christian Inzinger
- *
+ * 
  */
 @Remotable
 public interface EventReceiver {
-	void receiveEvent(Event event);
+    void receiveEvent(Event event);
 }

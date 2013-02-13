@@ -20,103 +20,104 @@ import eu.indenica.common.LoggerFactory;
  */
 @XmlRootElement
 public class MonitoringQueryImpl implements MonitoringQuery {
-	private final static Logger LOG = LoggerFactory.getLogger();
+    private final static Logger LOG = LoggerFactory.getLogger();
 
-	protected String name;
-	protected String[] inputEventTypes;
-	protected String[] outputEventTypes;
-	protected String statement;
+    protected String name;
+    protected String[] inputEventTypes;
+    protected String[] outputEventTypes;
+    protected String statement;
 
-	/**
-	 * @see eu.indenica.monitoring.MonitoringQuery#getName()
-	 */
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	/**
-	 * @see eu.indenica.monitoring.MonitoringQuery#getOutputEventTypes()
-	 */
-	@Override
-	public String[] getOutputEventTypes() {
-		return outputEventTypes;
-	}
+    /**
+     * @see eu.indenica.monitoring.MonitoringQuery#getName()
+     */
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	/**
-	 * @param outputEventTypes
-	 *            the outputEventTypes to set
-	 */
-	@Property
-	public void setOutputEventTypes(String[] outputEventTypes) {
-		this.outputEventTypes = outputEventTypes;
-	}
+    /**
+     * @param name
+     *            the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	/**
-	 * @see eu.indenica.monitoring.MonitoringQuery#getInputEventTypes()
-	 */
-	@Override
-	public String[] getInputEventTypes() {
-		return inputEventTypes;
-	}
+    /**
+     * @see eu.indenica.monitoring.MonitoringQuery#getOutputEventTypes()
+     */
+    @Override
+    public String[] getOutputEventTypes() {
+        return outputEventTypes;
+    }
 
-	/**
-	 * @param inputEventTypes
-	 *            the inputEventTypes to set
-	 */
-	@Property
-	public void setInputEventTypes(String[] inputEventTypes) {
-		LOG.debug("Set input event types to {}", inputEventTypes);
-		this.inputEventTypes = inputEventTypes;
-	}
+    /**
+     * @param outputEventTypes
+     *            the outputEventTypes to set
+     */
+    @Property
+    public void setOutputEventTypes(String[] outputEventTypes) {
+        this.outputEventTypes = outputEventTypes;
+    }
 
-	/**
-	 * @see eu.indenica.monitoring.MonitoringQuery#getStatement()
-	 */
-	@Override
-	public String getStatement() {
-		return statement;
-	}
+    /**
+     * @see eu.indenica.monitoring.MonitoringQuery#getInputEventTypes()
+     */
+    @Override
+    public String[] getInputEventTypes() {
+        return inputEventTypes;
+    }
 
-	/**
-	 * @param statement
-	 *            the statement to set
-	 */
-	@Property
-	public void setStatement(String statement) {
-		this.statement = statement;
-	}
+    /**
+     * @param inputEventTypes
+     *            the inputEventTypes to set
+     */
+    @Property
+    public void setInputEventTypes(String[] inputEventTypes) {
+        LOG.debug("Set input event types to {}", inputEventTypes);
+        this.inputEventTypes = inputEventTypes;
+    }
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		StringBuilder result =
-				new StringBuilder().append("#<")
-						.append(getClass().getSimpleName()).append(":");
-		if(getStatement() != null)
-			result.append(" statement: '")
-					.append(getStatement().replaceAll("\\s+", " ").trim())
-					.append("'");
+    /**
+     * @see eu.indenica.monitoring.MonitoringQuery#getStatement()
+     */
+    @Override
+    public String getStatement() {
+        return statement;
+    }
 
-		if(getInputEventTypes() != null)
-			result.append(", inputEventTypes: ").append(
-					Arrays.toString(getInputEventTypes()));
+    /**
+     * @param statement
+     *            the statement to set
+     */
+    @Property
+    public void setStatement(String statement) {
+        this.statement = statement;
+    }
 
-		if(getOutputEventTypes() != null)
-			result.append(", outputEventTypes: ").append(
-					Arrays.toString(getOutputEventTypes()));
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder result =
+                new StringBuilder().append("#<")
+                        .append(getClass().getSimpleName()).append(":");
+        if(getStatement() != null)
+            result.append(" statement: '")
+                    .append(getStatement().replaceAll("\\s+", " ").trim())
+                    .append("'");
 
-		result.append(">");
-		return result.toString();
-	}
+        if(getInputEventTypes() != null)
+            result.append(", inputEventTypes: ").append(
+                    Arrays.toString(getInputEventTypes()));
+
+        if(getOutputEventTypes() != null)
+            result.append(", outputEventTypes: ").append(
+                    Arrays.toString(getOutputEventTypes()));
+
+        result.append(">");
+        return result.toString();
+    }
 }

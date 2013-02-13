@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import eu.indenica.common.ActivemqPubSub;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
+import eu.indenica.common.PubSubFactory;
 import eu.indenica.events.Event;
 import eu.indenica.events.EventOne;
 import eu.indenica.messaging.MessageBroker;
@@ -38,64 +39,65 @@ import eu.indenica.monitoring.MonitoringQueryImpl;
  * @author Christian Inzinger
  */
 public class TestEsperMonitoringEngine {
-	private static Logger LOG = LoggerFactory.getLogger();
-	private Semaphore msgWaitLock;
-	private NameProvider nameProvider;
-	private PubSub pubSub;
-	private MessageBroker broker;
-	private MonitoringEngine monitoringEngine;
+    private static Logger LOG = LoggerFactory.getLogger();
+    private Semaphore msgWaitLock;
+    private NameProvider nameProvider;
+    private PubSub pubSub;
+    private MessageBroker broker;
+    private MonitoringEngine monitoringEngine;
 
-	@BeforeClass
-	public static void setUpBeforeClass() {
-		setLogLevels();
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        setLogLevels();
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		msgWaitLock = new Semaphore(0);
-		nameProvider = new NameProvider("test-" + System.currentTimeMillis());
-		broker = new MessageBroker(nameProvider);
-		pubSub = new ActivemqPubSub();
-		monitoringEngine = new EsperMonitoringEngine();
-		monitoringEngine.init();
-	}
+    @Before
+    public void setUp() throws Exception {
+        msgWaitLock = new Semaphore(0);
+        nameProvider = new NameProvider("test-" + System.currentTimeMillis());
+        broker = new MessageBroker(nameProvider);
+        pubSub = new ActivemqPubSub();
+        monitoringEngine = new EsperMonitoringEngine();
+        monitoringEngine.init();
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		msgWaitLock.drainPermits();
-		monitoringEngine.destroy();
-		pubSub.destroy();
-		broker.destroy();
-	}
+    @After
+    public void tearDown() throws Exception {
+        msgWaitLock.drainPermits();
+        monitoringEngine.destroy();
+        PubSubFactory.resetInstance();
+        pubSub.destroy();
+        broker.destroy();
+    }
 
-	/**
-	 * The monitoring engine should allow to add a {@link MonitoringQuery} and
-	 * run it. The query should receive events and emit them as appropriate
-	 * 
-	 * @throws Exception
-	 *             if something goes wrong
-	 */
-	@Test
-	public void testAddSimpleQuery() throws Exception {
-		LOG.debug("Test adding simple query...");
-		MonitoringQueryImpl query = new MonitoringQueryImpl();
-		query.setInputEventTypes(new String[] { "input,"
-				+ EventOne.class.getCanonicalName() });
-		query.setOutputEventTypes(new String[] { EventOne.class
-				.getCanonicalName() });
-		query.setStatement("select * from EventOne");
-		monitoringEngine.addQuery(query);
+    /**
+     * The monitoring engine should allow to add a {@link MonitoringQuery} and
+     * run it. The query should receive events and emit them as appropriate
+     * 
+     * @throws Exception
+     *             if something goes wrong
+     */
+    @Test
+    public void testAddSimpleQuery() throws Exception {
+        LOG.debug("Test adding simple query...");
+        MonitoringQueryImpl query = new MonitoringQueryImpl();
+        query.setInputEventTypes(new String[] { "input,"
+                + EventOne.class.getCanonicalName() });
+        query.setOutputEventTypes(new String[] { EventOne.class
+                .getCanonicalName() });
+        query.setStatement("select * from EventOne");
+        monitoringEngine.addQuery(query);
 
-		Collection<Event> observedEvents = Lists.newArrayList();
-		createEventListener(pubSub, new EventOne().getEventType(),
-				observedEvents, msgWaitLock);
+        Collection<Event> observedEvents = Lists.newArrayList();
+        createEventListener(pubSub, new EventOne().getEventType(),
+                observedEvents, msgWaitLock);
 
-		EventOne event = new EventOne();
-		event.setMessage("message " + System.currentTimeMillis());
-		pubSub.publish("input", event);
+        EventOne event = new EventOne();
+        event.setMessage("message " + System.currentTimeMillis());
+        pubSub.publish("input", event);
 
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem((Event) event));
-	}
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem((Event) event));
+    }
 
 }

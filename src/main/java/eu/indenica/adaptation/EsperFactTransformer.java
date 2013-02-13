@@ -30,118 +30,118 @@ import eu.indenica.events.Event;
 @Scope("COMPOSITE")
 @XmlSeeAlso({ FactRuleImpl.class })
 public class EsperFactTransformer implements FactTransformer, UpdateListener {
-	private final static Logger LOG = LoggerFactory.getLogger();
+    private final static Logger LOG = LoggerFactory.getLogger();
 
-	private PubSub pubsub;
-	private EPServiceProvider epService;
-	private FactRule[] rules;
+    private PubSub pubsub;
+    private EPServiceProvider epService;
+    private FactRule[] rules;
 
-	@Init
-	@Override
-	public void init() throws Exception {
-		LOG.debug("Starting {}...", getClass().getSimpleName());
-		this.pubsub = PubSubFactory.getPubSub();
-		epService = EPServiceProviderManager.getDefaultProvider();
-		for(FactRule rule : rules)
-			addRule(rule);
-		LOG.info("{} started", getClass().getSimpleName());
-	}
+    @Init
+    @Override
+    public void init() throws Exception {
+        LOG.debug("Starting {}...", getClass().getSimpleName());
+        this.pubsub = PubSubFactory.getPubSub();
+        epService = EPServiceProviderManager.getDefaultProvider();
+        for(FactRule rule : rules)
+            addRule(rule);
+        LOG.info("{} started", getClass().getSimpleName());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.common.RuntimeComponent#destroy()
-	 */
-	@Destroy
-	@Override
-	public void destroy() throws Exception {
-		LOG.debug("Stopping Fact Transformer...");
-		// TODO Auto-generated method stub
-		LOG.info("Fact Transformer stopped.");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.common.RuntimeComponent#destroy()
+     */
+    @Destroy
+    @Override
+    public void destroy() throws Exception {
+        LOG.debug("Stopping Fact Transformer...");
+        // TODO Auto-generated method stub
+        LOG.info("Fact Transformer stopped.");
+    }
 
-	@Property
-	public void setFactRules(final FactRuleImpl[] rules) {
-		LOG.debug("Setting fact rules: {}", rules);
-		this.rules = rules;
-	}
+    @Property
+    public void setFactRules(final FactRuleImpl[] rules) {
+        LOG.debug("Setting fact rules: {}", rules);
+        this.rules = rules;
+    }
 
-	/**
-	 * @param rule
-	 */
-	private void addRule(final FactRule rule) {
-		LOG.info("Adding rule {}", rule);
-		registerInputEventTypes(rule);
-		addStatement(rule);
-	}
+    /**
+     * @param rule
+     */
+    private void addRule(final FactRule rule) {
+        LOG.info("Adding rule {}", rule);
+        registerInputEventTypes(rule);
+        addStatement(rule);
+    }
 
-	/**
-	 * @param rule
-	 */
-	private void addStatement(final FactRule rule) {
-		for(String stmt : rule.getStatement().trim().split(";")) {
-			epService.getEPAdministrator().createEPL(stmt).addListener(this);
-		}
-	}
+    /**
+     * @param rule
+     */
+    private void addStatement(final FactRule rule) {
+        for(String stmt : rule.getStatement().trim().split(";")) {
+            epService.getEPAdministrator().createEPL(stmt).addListener(this);
+        }
+    }
 
-	/**
-	 * @param rule
-	 */
-	private void registerInputEventTypes(final FactRule rule) {
-		for(String eventType : rule.getInputEventTypes()) {
-			String source = null;
-			if(eventType.contains(",")) {
-				String[] split = eventType.split(",", 2);
-				eventType = split[1].trim();
-				source = split[0].trim();
-				// FIXME: Correctly get RuntimeComponent reference to register.
-				LOG.trace("Found source: {}", source);
-			}
+    /**
+     * @param rule
+     */
+    private void registerInputEventTypes(final FactRule rule) {
+        for(String eventType : rule.getInputEventTypes()) {
+            String source = null;
+            if(eventType.contains(",")) {
+                String[] split = eventType.split(",", 2);
+                eventType = split[1].trim();
+                source = split[0].trim();
+                // FIXME: Correctly get RuntimeComponent reference to register.
+                LOG.trace("Found source: {}", source);
+            }
 
-			try {
-				Class<?> eventTypeClass = Class.forName(eventType);
-				LOG.info("Loaded class {}", eventTypeClass);
-				epService.getEPAdministrator().getConfiguration()
-						.addEventType(eventTypeClass);
-				epService.getEPAdministrator().getConfiguration()
-						.addImport(eventTypeClass);
-			} catch(ClassNotFoundException e) {
-				LOG.warn("Could not find class {}!", eventType);
-				e.printStackTrace();
-			}
-			pubsub.registerListener(this, null, eventType);
-		}
-	}
+            try {
+                Class<?> eventTypeClass = Class.forName(eventType);
+                LOG.info("Loaded class {}", eventTypeClass);
+                epService.getEPAdministrator().getConfiguration()
+                        .addEventType(eventTypeClass);
+                epService.getEPAdministrator().getConfiguration()
+                        .addImport(eventTypeClass);
+            } catch(ClassNotFoundException e) {
+                LOG.warn("Could not find class {}!", eventType);
+                e.printStackTrace();
+            }
+            pubsub.registerListener(this, null, eventType);
+        }
+    }
 
-	// private Event previousEvent = null;
+    // private Event previousEvent = null;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.espertech.esper.client.UpdateListener#update(com.espertech.esper.
-	 * client.EventBean[], com.espertech.esper.client.EventBean[])
-	 */
-	@Override
-	public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-		EventBean event = newEvents[0];
-		// if(event.getUnderlying().equals(previousEvent))
-		// return;
-		// previousEvent = (Event) event.getUnderlying();
-		LOG.trace("Event object: {}", event);
-		LOG.info("Publishing fact event {}", event.getUnderlying());
-		pubsub.publish(this.getClass().getName(), (Event) event.getUnderlying());
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.espertech.esper.client.UpdateListener#update(com.espertech.esper.
+     * client.EventBean[], com.espertech.esper.client.EventBean[])
+     */
+    @Override
+    public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+        EventBean event = newEvents[0];
+        // if(event.getUnderlying().equals(previousEvent))
+        // return;
+        // previousEvent = (Event) event.getUnderlying();
+        LOG.trace("Event object: {}", event);
+        LOG.info("Publishing fact event {}", event.getUnderlying());
+        pubsub.publish(this.getClass().getName(), (Event) event.getUnderlying());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.
-	 * RuntimeComponent, eu.indenica.events.Event)
-	 */
-	@Override
-	public void eventReceived(String source, Event event) {
-		LOG.debug("Event {} received from {}", event, source);
-		epService.getEPRuntime().sendEvent(event);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.common.EventListener#eventReceived(eu.indenica.common.
+     * RuntimeComponent, eu.indenica.events.Event)
+     */
+    @Override
+    public void eventReceived(String source, Event event) {
+        LOG.debug("Event {} received from {}", event, source);
+        epService.getEPRuntime().sendEvent(event);
+    }
 }

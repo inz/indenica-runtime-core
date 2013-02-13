@@ -27,64 +27,64 @@ import eu.indenica.repository.Repository;
  * @author Christian Inzinger
  */
 public class RuntimeTest {
-	private final static Logger LOG = LoggerFactory.getLogger();
-	// private static Node runtimeNode;
-	private static Launch runtimeNode;
+    private final static Logger LOG = LoggerFactory.getLogger();
+    // private static Node runtimeNode;
+    private static Launch runtimeNode;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("root"))
-				.setLevel(ch.qos.logback.classic.Level.TRACE);
-		// ((ch.qos.logback.classic.Logger) LoggerFactory
-		// .getLogger("org.apache.activemq"))
-		// .setLevel(ch.qos.logback.classic.Level.INFO);
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("root"))
+                .setLevel(ch.qos.logback.classic.Level.TRACE);
+        // ((ch.qos.logback.classic.Logger) LoggerFactory
+        // .getLogger("org.apache.activemq"))
+        // .setLevel(ch.qos.logback.classic.Level.INFO);
 
-		// String runtimeLocation =
-		// ContributionLocationHelper
-		// .getContributionLocation("rt.composite");
-		String runtimeLocation = "runtime.composite";
+        // String runtimeLocation =
+        // ContributionLocationHelper
+        // .getContributionLocation("rt.composite");
+        String runtimeLocation = "runtime.composite";
 
-		// String clientLocation =
-		// ContributionLocationHelper.getContributionLocation("client.composite");
-		LOG.debug("Starting node w/ composite '{}'", runtimeLocation);
-		// runtimeNode =
-		// NodeFactory.newInstance().createNode(
-		// new Contribution("runtime", runtimeLocation)
-		// // , new Contribution("client", clientLocation);
-		// );
-		// runtimeNode.start();
+        // String clientLocation =
+        // ContributionLocationHelper.getContributionLocation("client.composite");
+        LOG.debug("Starting node w/ composite '{}'", runtimeLocation);
+        // runtimeNode =
+        // NodeFactory.newInstance().createNode(
+        // new Contribution("runtime", runtimeLocation)
+        // // , new Contribution("client", clientLocation);
+        // );
+        // runtimeNode.start();
 
-		runtimeNode = new Launch();
-		runtimeNode.loadContribution(runtimeLocation);
-		LOG.debug("Node started ({}).", runtimeNode);
-		LOG.info("Components: {}", runtimeNode.getComponentNames());
-	}
+        runtimeNode = new Launch();
+        runtimeNode.loadContribution(runtimeLocation);
+        LOG.debug("Node started ({}).", runtimeNode);
+        LOG.info("Components: {}", runtimeNode.getComponentNames());
+    }
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		LOG.debug("Stopping node...");
-		if(runtimeNode != null)
-			runtimeNode.destroy();
-	}
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        LOG.debug("Stopping node...");
+        if(runtimeNode != null)
+            runtimeNode.destroy();
+    }
 
-	@Test
-	public void testSerialize() throws Exception {
-		JAXBContext context = JAXBContext.newInstance(ActionEvent.class);
-		Marshaller m = context.createMarshaller();
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		m.marshal(new ActionEvent(new Action()), System.out);
-	}
+    @Test
+    public void testSerialize() throws Exception {
+        JAXBContext context = JAXBContext.newInstance(ActionEvent.class);
+        Marshaller m = context.createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        m.marshal(new ActionEvent(new Action()), System.out);
+    }
 
-	@Test
-	public void testServicesStarted() throws Exception {
-		LOG.debug("Accessing repository...");
-		// TODO: access repository via smth. else?
-		Repository repository =
-				runtimeNode.getService(Repository.class, "Repository");
-		repository.store("test");
-		assertThat(Lists.newArrayList(repository.query("test")),
-				hasItem("test"));
-		LOG.debug("repo: {}", repository);
-		assertThat(repository, is(notNullValue()));
-	}
+    @Test
+    public void testServicesStarted() throws Exception {
+        LOG.debug("Accessing repository...");
+        // TODO: access repository via smth. else?
+        Repository repository =
+                runtimeNode.getService(Repository.class, "Repository");
+        repository.store("test");
+        assertThat(Lists.newArrayList(repository.query("test")),
+                hasItem("test"));
+        LOG.debug("repo: {}", repository);
+        assertThat(repository, is(notNullValue()));
+    }
 }

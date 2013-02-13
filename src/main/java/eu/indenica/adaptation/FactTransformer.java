@@ -8,7 +8,6 @@ import eu.indenica.common.RuntimeComponent;
 
 /**
  * @author Christian Inzinger
- *
+ * 
  */
-public interface FactTransformer extends RuntimeComponent, EventListener {
-}
+public interface FactTransformer extends RuntimeComponent, EventListener {}

@@ -9,10 +9,11 @@ import eu.indenica.adaptation.Action;
 
 /**
  * @author Christian Inzinger
- *
+ * 
  */
 @Remotable
 public interface AdaptationInterface {
-	void performAction(Action action);
-	void registerCallback();
+    void performAction(Action action);
+
+    void registerCallback();
 }

@@ -37,161 +37,161 @@ import eu.indenica.events.Event;
 @Scope("COMPOSITE")
 @EagerInit
 public class DroolsAdaptationEngine implements AdaptationEngine {
-	private static Logger LOG = LoggerFactory.getLogger();
+    private static Logger LOG = LoggerFactory.getLogger();
 
-	private PubSub pubsub;
-	private KnowledgeBase knowledgeBase;
-	private StatefulKnowledgeSession session;
-	private KnowledgeBuilder knowledgeBuilder;
+    private PubSub pubsub;
+    private KnowledgeBase knowledgeBase;
+    private StatefulKnowledgeSession session;
+    private KnowledgeBuilder knowledgeBuilder;
 
-	private Map<String, Fact> factBuffer = Maps.newHashMap();
+    private Map<String, Fact> factBuffer = Maps.newHashMap();
 
-	// @Property
-	protected AdaptationRule[] rules;
+    // @Property
+    protected AdaptationRule[] rules;
 
-	@Property
-	protected String[] inputEventTypes;
+    @Property
+    protected String[] inputEventTypes;
 
-	// /**
-	// * @param rules
-	// * the rules to set
-	// */
-	// public void setRules(String[] rules) {
-	// LOG.debug("Setting rules: {}", rules);
-	// this.rules = rules;
-	// }
+    // /**
+    // * @param rules
+    // * the rules to set
+    // */
+    // public void setRules(String[] rules) {
+    // LOG.debug("Setting rules: {}", rules);
+    // this.rules = rules;
+    // }
 
-	@Property
-	public void setRules(AdaptationRuleImpl[] rules) {
-		LOG.debug("Setting rules: {}", rules);
-		this.rules = rules;
-	}
+    @Property
+    public void setRules(AdaptationRuleImpl[] rules) {
+        LOG.debug("Setting rules: {}", rules);
+        this.rules = rules;
+    }
 
-	/**
-	 * @param inputEventTypes
-	 *            the inputEventTypes to set
-	 */
-	public void setInputEventTypes(String[] inputEventTypes) {
-		LOG.debug("Setting input event types: {}", inputEventTypes);
-		this.inputEventTypes = inputEventTypes;
-	}
+    /**
+     * @param inputEventTypes
+     *            the inputEventTypes to set
+     */
+    public void setInputEventTypes(String[] inputEventTypes) {
+        LOG.debug("Setting input event types: {}", inputEventTypes);
+        this.inputEventTypes = inputEventTypes;
+    }
 
-	@Init
-	@Override
-	public void init() throws Exception {
-		LOG.info("Initializing Adaptation Engine...");
-		this.pubsub = PubSubFactory.getPubSub();
-		knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-		for(AdaptationRule rule : rules)
-			addRule(rule);
+    @Init
+    @Override
+    public void init() throws Exception {
+        LOG.info("Initializing Adaptation Engine...");
+        this.pubsub = PubSubFactory.getPubSub();
+        knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+        for(AdaptationRule rule : rules)
+            addRule(rule);
 
-		if(knowledgeBuilder.hasErrors())
-			LOG.error("Errors: {}", knowledgeBuilder.getErrors());
-		knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
-		knowledgeBase.addKnowledgePackages(knowledgeBuilder
-				.getKnowledgePackages());
-		session = knowledgeBase.newStatefulKnowledgeSession();
-		session.setGlobal("publisher", this);
-		session.fireAllRules();
-		LOG.debug("Adaptation Engine started.");
-	}
+        if(knowledgeBuilder.hasErrors())
+            LOG.error("Errors: {}", knowledgeBuilder.getErrors());
+        knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
+        knowledgeBase.addKnowledgePackages(knowledgeBuilder
+                .getKnowledgePackages());
+        session = knowledgeBase.newStatefulKnowledgeSession();
+        session.setGlobal("publisher", this);
+        session.fireAllRules();
+        LOG.debug("Adaptation Engine started.");
+    }
 
-	@Destroy
-	@Override
-	public void destroy() throws Exception {
-		LOG.debug("Stopping Adaptation Engine...");
-		session.dispose();
-		executor.shutdown();
-		executor.shutdownNow();
-		executor.awaitTermination(2, TimeUnit.SECONDS);
-		LOG.info("Adaptation Engine stopped.");
-	}
+    @Destroy
+    @Override
+    public void destroy() throws Exception {
+        LOG.debug("Stopping Adaptation Engine...");
+        session.dispose();
+        executor.shutdown();
+        executor.shutdownNow();
+        executor.awaitTermination(2, TimeUnit.SECONDS);
+        LOG.info("Adaptation Engine stopped.");
+    }
 
-	@Override
-	public void eventReceived(String source, Event event) {
-		LOG.debug("Received event {} from {}", event, source);
-		if(!(event instanceof Fact))
-			LOG.warn("Event received is not fact event!");
-		updateFact(event);
-	}
+    @Override
+    public void eventReceived(String source, Event event) {
+        LOG.debug("Received event {} from {}", event, source);
+        if(!(event instanceof Fact))
+            LOG.warn("Event received is not fact event!");
+        updateFact(event);
+    }
 
-	/**
-	 * @param event
-	 * @return
-	 */
-	private Fact updateFact(Event event) {
-		boolean newFact = false;
-		if(!factBuffer.containsKey(event.getEventType())) {
-			factBuffer.put(event.getEventType(), (Fact) event);
-			newFact = true;
-		}
+    /**
+     * @param event
+     * @return
+     */
+    private Fact updateFact(Event event) {
+        boolean newFact = false;
+        if(!factBuffer.containsKey(event.getEventType())) {
+            factBuffer.put(event.getEventType(), (Fact) event);
+            newFact = true;
+        }
 
-		LOG.info("Update fact {}", event);
+        LOG.info("Update fact {}", event);
 
-		// TODO: probably need to update fact using session.update();
+        // TODO: probably need to update fact using session.update();
 
-		Fact fact = factBuffer.get(event.getEventType());
-		fact.setEvent(event);
-		if(newFact)
-			setFact(fact);
-		session.fireAllRules();
-		return fact;
-	}
+        Fact fact = factBuffer.get(event.getEventType());
+        fact.setEvent(event);
+        if(newFact)
+            setFact(fact);
+        session.fireAllRules();
+        return fact;
+    }
 
-	@Override
-	public void addRule(AdaptationRule rule) {
-		LOG.debug("Adding rule: {}", rule);
-		knowledgeBuilder.add(ResourceFactory
-				.newInputStreamResource(new ByteArrayInputStream(rule
-						.getStatement().getBytes(Charsets.UTF_8))),
-				ResourceType.DRL);
-		registerInputEventTypes(rule);
-	}
+    @Override
+    public void addRule(AdaptationRule rule) {
+        LOG.debug("Adding rule: {}", rule);
+        knowledgeBuilder.add(ResourceFactory
+                .newInputStreamResource(new ByteArrayInputStream(rule
+                        .getStatement().getBytes(Charsets.UTF_8))),
+                ResourceType.DRL);
+        registerInputEventTypes(rule);
+    }
 
-	/**
-	 * @param rule
-	 */
-	private void registerInputEventTypes(AdaptationRule rule) {
-		if(rule.getInputEventTypes() == null) {
-			LOG.warn("No input events for rule {}", rule);
-			return;
-		}
-		for(String eventType : rule.getInputEventTypes()) {
-			String source = null;
-			if(eventType.contains(",")) {
-				String[] split = eventType.split(",", 2);
-				eventType = split[1].trim();
-				source = split[0].trim();
-				// FIXME: Correctly get RuntimeComponent reference to register.
-				LOG.trace("Found source: {}", source);
-			}
-			LOG.debug("Register listener for {} from {}", eventType, source);
-			pubsub.registerListener(this, null, eventType);
-		}
-	}
+    /**
+     * @param rule
+     */
+    private void registerInputEventTypes(AdaptationRule rule) {
+        if(rule.getInputEventTypes() == null) {
+            LOG.warn("No input events for rule {}", rule);
+            return;
+        }
+        for(String eventType : rule.getInputEventTypes()) {
+            String source = null;
+            if(eventType.contains(",")) {
+                String[] split = eventType.split(",", 2);
+                eventType = split[1].trim();
+                source = split[0].trim();
+                // FIXME: Correctly get RuntimeComponent reference to register.
+                LOG.trace("Found source: {}", source);
+            }
+            LOG.debug("Register listener for {} from {}", eventType, source);
+            pubsub.registerListener(this, null, eventType);
+        }
+    }
 
-	@Override
-	public void setFact(Fact fact) {
-		LOG.debug("Add new fact: {}", fact);
-		session.insert(fact);
-	}
+    @Override
+    public void setFact(Fact fact) {
+        LOG.debug("Add new fact: {}", fact);
+        session.insert(fact);
+    }
 
-	public void performAction(ActionEvent actionEvent) {
-		LOG.info("Perform action {}", actionEvent);
-		pubsub.publish(this.getClass().getName(), actionEvent);
-	}
+    public void performAction(ActionEvent actionEvent) {
+        LOG.info("Perform action {}", actionEvent);
+        pubsub.publish(this.getClass().getName(), actionEvent);
+    }
 
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-	public void publishEvent(final Event event) throws Exception {
-		LOG.info("Publishing event {}", event);
-		final String component = this.getClass().getName();
-		new Callable<Void>() {
-			public Void call() throws Exception {
-				pubsub.publish(component, event);
-				return null;
-			}
-		}.call();
+    public void publishEvent(final Event event) throws Exception {
+        LOG.info("Publishing event {}", event);
+        final String component = this.getClass().getName();
+        new Callable<Void>() {
+            public Void call() throws Exception {
+                pubsub.publish(component, event);
+                return null;
+            }
+        }.call();
 
-	}
+    }
 }

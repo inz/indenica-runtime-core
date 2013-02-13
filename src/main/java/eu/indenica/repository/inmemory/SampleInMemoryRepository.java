@@ -31,44 +31,44 @@ import eu.indenica.repository.Query;
  */
 @Scope("COMPOSITE")
 public class SampleInMemoryRepository extends AbstractRepository {
-	private final static Logger LOG = LoggerFactory.getLogger();
-	protected Collection<String> store = Lists.newArrayList();
+    private final static Logger LOG = LoggerFactory.getLogger();
+    protected Collection<String> store = Lists.newArrayList();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.repository.Repository#query(java.lang.String)
-	 */
-	@Override
-	public String[] query(String query) {
-		LOG.trace("Searching for '{}'", query);
-		Collection<String> result = Lists.newArrayList();
-		for(String s : store) {
-			if(s.matches(query))
-				result.add(s);
-		}
-		return result.toArray(new String[result.size()]);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.repository.Repository#query(java.lang.String)
+     */
+    @Override
+    public String[] query(String query) {
+        LOG.trace("Searching for '{}'", query);
+        Collection<String> result = Lists.newArrayList();
+        for(String s : store) {
+            if(s.matches(query))
+                result.add(s);
+        }
+        return result.toArray(new String[result.size()]);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.repository.Repository#store(java.lang.String)
-	 */
-	@Override
-	public void store(String jsonString) {
-		LOG.trace("Storing '{}'", jsonString);
-		store.add(jsonString);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.repository.Repository#store(java.lang.String)
+     */
+    @Override
+    public void store(String jsonString) {
+        LOG.trace("Storing '{}'", jsonString);
+        store.add(jsonString);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.indenica.repository.Repository#delete(java.lang.String)
-	 */
-	@Override
-	public void delete(String id) {
-		store.remove(id);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.repository.Repository#delete(java.lang.String)
+     */
+    @Override
+    public void delete(String id) {
+        store.remove(id);
+    }
 
 }

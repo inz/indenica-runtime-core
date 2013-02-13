@@ -36,256 +36,257 @@ import eu.indenica.events.Event;
  * @author Christian Inzinger
  */
 public class TestConnectivity {
-	private final static Logger LOG = LoggerFactory.getLogger();
+    private final static Logger LOG = LoggerFactory.getLogger();
 
-	public static class CustomBrokerUriPubSub extends ActivemqPubSub {
-		public CustomBrokerUriPubSub(URI brokerUri) throws Exception {
-			super(brokerUri);
-		}
-	}
+    public static class CustomBrokerUriPubSub extends ActivemqPubSub {
+        public CustomBrokerUriPubSub(URI brokerUri) throws Exception {
+            super(brokerUri);
+        }
+    }
 
-	/**
-	 * A sample Event
-	 * 
-	 * @author Christian Inzinger
-	 */
-	public static class EventOne extends Event {
-		private static final long serialVersionUID = 2114845083753269316L;
-		private static final long typeId = System.currentTimeMillis();
-		private String attr1;
-		private int anAttribute;
+    /**
+     * A sample Event
+     * 
+     * @author Christian Inzinger
+     */
+    public static class EventOne extends Event {
+        private static final long serialVersionUID = 2114845083753269316L;
+        private static final long typeId = System.currentTimeMillis();
+        private String attr1;
+        private int anAttribute;
 
-		public EventOne() {
-			super("test.EventOne." + typeId);
-		}
+        public EventOne() {
+            super("test.EventOne." + typeId);
+        }
 
-		public void setAttr1(String attr1) {
-			this.attr1 = attr1;
-		}
+        public void setAttr1(String attr1) {
+            this.attr1 = attr1;
+        }
 
-		public void setAnAttribute(int anAttribute) {
-			this.anAttribute = anAttribute;
-		}
+        public void setAnAttribute(int anAttribute) {
+            this.anAttribute = anAttribute;
+        }
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return new StringBuilder().append("#<")
-					.append(getClass().getName()).append(": ")
-					.append("attr1: ").append(attr1).append(", anAttribute: ")
-					.append(anAttribute).append(">").toString();
-		}
-	}
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return new StringBuilder().append("#<")
+                    .append(getClass().getName()).append(": ")
+                    .append("attr1: ").append(attr1).append(", anAttribute: ")
+                    .append(anAttribute).append(">").toString();
+        }
+    }
 
-	private String applicationName;
-	private NameProvider nameProvider;
-	private MessageBroker defaultBroker;
-	private PubSub defaultPubSub;
-	private Semaphore msgWaitLock;
-	private Collection<Event> observedEvents;
+    private String applicationName;
+    private NameProvider nameProvider;
+    private MessageBroker defaultBroker;
+    private PubSub defaultPubSub;
+    private Semaphore msgWaitLock;
+    private Collection<Event> observedEvents;
 
-	@BeforeClass
-	public static void setUpBeforeClass() {
-		TestUtils.setLogLevels();
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        TestUtils.setLogLevels();
+    }
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		applicationName = "test-" + System.currentTimeMillis();
-		nameProvider = new NameProvider(applicationName);
-		defaultBroker = new MessageBroker(nameProvider);
-		defaultPubSub = new ActivemqPubSub();
-		msgWaitLock = new Semaphore(0);
-		observedEvents = Lists.newArrayList();
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        applicationName = "test-" + System.currentTimeMillis();
+        nameProvider = new NameProvider(applicationName);
+        defaultBroker = new MessageBroker(nameProvider);
+        defaultPubSub = new ActivemqPubSub();
+        msgWaitLock = new Semaphore(0);
+        observedEvents = Lists.newArrayList();
 
-		assertThat(defaultBroker, is(notNullValue()));
-		assertThat(defaultPubSub, is(notNullValue()));
-	}
+        assertThat(defaultBroker, is(notNullValue()));
+        assertThat(defaultPubSub, is(notNullValue()));
+    }
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		observedEvents.clear();
-		msgWaitLock.drainPermits();
-		defaultPubSub.destroy();
-		defaultBroker.destroy();
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+        observedEvents.clear();
+        msgWaitLock.drainPermits();
+        defaultPubSub.destroy();
+        defaultBroker.destroy();
+    }
 
-	/**
-	 * Test if events can be sent and received at all.
-	 * 
-	 * One broker, default messaging behavior. Send and receive events using
-	 * same pubsub instance.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testSimpleConnection() throws Exception {
-		createEventListener(defaultPubSub, observedEvents, msgWaitLock);
+    /**
+     * Test if events can be sent and received at all.
+     * 
+     * One broker, default messaging behavior. Send and receive events using
+     * same pubsub instance.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSimpleConnection() throws Exception {
+        createEventListener(defaultPubSub, observedEvents, msgWaitLock);
 
-		LOG.debug("Sending empty message...");
-		defaultPubSub.publish(null, new EventOne());
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents.size(), is(1));
+        LOG.debug("Sending empty message...");
+        defaultPubSub.publish(null, new EventOne());
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents.size(), is(1));
 
-		LOG.debug("Sending message w/ content");
-		Event e = new EventOne();
-		((EventOne) e).setAttr1("a value" + System.currentTimeMillis());
-		defaultPubSub.publish(null, e);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(e));
+        LOG.debug("Sending message w/ content");
+        Event e = new EventOne();
+        ((EventOne) e).setAttr1("a value" + System.currentTimeMillis());
+        defaultPubSub.publish(null, e);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(e));
 
-		observedEvents.clear();
-		int nEvents = 13;
-		for(int i = 0; i < nEvents; i++) {
-			Event event = new EventOne();
-			((EventOne) event).setAnAttribute(i);
-			((EventOne) event)
-					.setAttr1("message " + System.currentTimeMillis());
-			LOG.debug("Sending message with event: {}...", e);
-			defaultPubSub.publish(null, event);
-		}
-		msgWaitLock.tryAcquire(nEvents, 2, TimeUnit.SECONDS);
-		assertThat(observedEvents.size(), is(nEvents));
-	}
+        observedEvents.clear();
+        int nEvents = 13;
+        for(int i = 0; i < nEvents; i++) {
+            Event event = new EventOne();
+            ((EventOne) event).setAnAttribute(i);
+            ((EventOne) event)
+                    .setAttr1("message " + System.currentTimeMillis());
+            LOG.debug("Sending message with event: {}...", e);
+            defaultPubSub.publish(null, event);
+        }
+        msgWaitLock.tryAcquire(nEvents, 2, TimeUnit.SECONDS);
+        assertThat(observedEvents.size(), is(nEvents));
+    }
 
-	/**
-	 * Client should be able to establish connection to broker using multicast
-	 * discovery.
-	 * 
-	 * Messages should be delivered between pubsub instances.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testMcastDiscovery() throws Exception {
-		PubSub mcastPubSub =
-				new CustomBrokerUriPubSub(nameProvider.getMulticastDiscoveryUri());
-		assertThat(mcastPubSub, is(notNullValue()));
-		createEventListener(mcastPubSub, observedEvents, msgWaitLock);
+    /**
+     * Client should be able to establish connection to broker using multicast
+     * discovery.
+     * 
+     * Messages should be delivered between pubsub instances.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testMcastDiscovery() throws Exception {
+        PubSub mcastPubSub =
+                new CustomBrokerUriPubSub(
+                        nameProvider.getMulticastDiscoveryUri());
+        assertThat(mcastPubSub, is(notNullValue()));
+        createEventListener(mcastPubSub, observedEvents, msgWaitLock);
 
-		LOG.debug("Send event in same pubsub instance...");
-		Event e = new EventOne();
-		mcastPubSub.publish(null, e);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(e));
+        LOG.debug("Send event in same pubsub instance...");
+        Event e = new EventOne();
+        mcastPubSub.publish(null, e);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(e));
 
-		LOG.debug("Send event from defaultPubSub to mcastPubSub...");
-		e = new EventOne();
-		defaultPubSub.publish(null, e);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(e));
+        LOG.debug("Send event from defaultPubSub to mcastPubSub...");
+        e = new EventOne();
+        defaultPubSub.publish(null, e);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(e));
 
-		observedEvents.clear();
+        observedEvents.clear();
 
-		createEventListener(defaultPubSub, observedEvents, msgWaitLock);
+        createEventListener(defaultPubSub, observedEvents, msgWaitLock);
 
-		LOG.debug("Send event from defaultPubSub to be received by both...");
-		e = new EventOne();
-		defaultPubSub.publish(null, e);
-		msgWaitLock.tryAcquire(2, 2, TimeUnit.SECONDS);
-		assertThat(observedEvents.size(), is(2));
-	}
+        LOG.debug("Send event from defaultPubSub to be received by both...");
+        e = new EventOne();
+        defaultPubSub.publish(null, e);
+        msgWaitLock.tryAcquire(2, 2, TimeUnit.SECONDS);
+        assertThat(observedEvents.size(), is(2));
+    }
 
-	/**
-	 * Multiple brokers should be able to discover each other and pass messages
-	 * for consumers.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testBrokerDiscovery() throws Exception {
-		MessageBroker secondBroker = new MessageBroker(nameProvider);
-		PubSub secondPubSub =
-				new CustomBrokerUriPubSub(URI.create(secondBroker
-						.getConnectString()));
-		assertThat(secondBroker, is(notNullValue()));
-		assertThat(secondPubSub, is(notNullValue()));
+    /**
+     * Multiple brokers should be able to discover each other and pass messages
+     * for consumers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testBrokerDiscovery() throws Exception {
+        MessageBroker secondBroker = new MessageBroker(nameProvider);
+        PubSub secondPubSub =
+                new CustomBrokerUriPubSub(URI.create(secondBroker
+                        .getConnectString()));
+        assertThat(secondBroker, is(notNullValue()));
+        assertThat(secondPubSub, is(notNullValue()));
 
-		createEventListener(secondPubSub, observedEvents, msgWaitLock);
+        createEventListener(secondPubSub, observedEvents, msgWaitLock);
 
-		LOG.info("Sending message from new broker to new broker...");
-		Event event = new EventOne();
-		secondPubSub.publish(null, event);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(event));
+        LOG.info("Sending message from new broker to new broker...");
+        Event event = new EventOne();
+        secondPubSub.publish(null, event);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(event));
 
-		msgWaitLock.drainPermits();
-		observedEvents.clear();
-		createEventListener(defaultPubSub, observedEvents, msgWaitLock);
-		LOG.info("Sending message from new broker to default broker...");
-		event = new EventOne();
-		secondPubSub.publish(null, event);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(event));
+        msgWaitLock.drainPermits();
+        observedEvents.clear();
+        createEventListener(defaultPubSub, observedEvents, msgWaitLock);
+        LOG.info("Sending message from new broker to default broker...");
+        event = new EventOne();
+        secondPubSub.publish(null, event);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(event));
 
-		msgWaitLock.drainPermits();
-		observedEvents.clear();
-		LOG.info("Sending message from default broker to new broker...");
-		event = new EventOne();
-		defaultPubSub.publish(null, event);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(event));
+        msgWaitLock.drainPermits();
+        observedEvents.clear();
+        LOG.info("Sending message from default broker to new broker...");
+        event = new EventOne();
+        defaultPubSub.publish(null, event);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(event));
 
-		secondPubSub.destroy();
-		secondBroker.destroy();
-	}
+        secondPubSub.destroy();
+        secondBroker.destroy();
+    }
 
-	/**
-	 * Multiple brokers should be able to discover each other and pass messages
-	 * for consumers.
-	 * 
-	 * This should also work if the first message is sent from the old broker
-	 * and should arrive at the new one.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testBrokerDiscoveryOtherWay() throws Exception {
-		MessageBroker secondBroker = new MessageBroker(nameProvider);
-		LOG.info("Second broker connect string: {}",
-				secondBroker.getConnectString());
-		PubSub secondPubSub =
-				new CustomBrokerUriPubSub(URI.create(secondBroker
-						.getConnectString()));
-		assertThat(secondBroker, is(notNullValue()));
-		assertThat(secondPubSub, is(notNullValue()));
+    /**
+     * Multiple brokers should be able to discover each other and pass messages
+     * for consumers.
+     * 
+     * This should also work if the first message is sent from the old broker
+     * and should arrive at the new one.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testBrokerDiscoveryOtherWay() throws Exception {
+        MessageBroker secondBroker = new MessageBroker(nameProvider);
+        LOG.info("Second broker connect string: {}",
+                secondBroker.getConnectString());
+        PubSub secondPubSub =
+                new CustomBrokerUriPubSub(URI.create(secondBroker
+                        .getConnectString()));
+        assertThat(secondBroker, is(notNullValue()));
+        assertThat(secondPubSub, is(notNullValue()));
 
-		createEventListener(secondPubSub, observedEvents, msgWaitLock);
+        createEventListener(secondPubSub, observedEvents, msgWaitLock);
 
-		LOG.info("Sending message from new broker to new broker...");
-		Event event = new EventOne();
-		secondPubSub.publish(null, event);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(event));
+        LOG.info("Sending message from new broker to new broker...");
+        Event event = new EventOne();
+        secondPubSub.publish(null, event);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(event));
 
-		msgWaitLock.drainPermits();
-		observedEvents.clear();
-		LOG.info("Sending message from default broker to new broker...");
-		event = new EventOne();
-		defaultPubSub.publish(null, event);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(event));
+        msgWaitLock.drainPermits();
+        observedEvents.clear();
+        LOG.info("Sending message from default broker to new broker...");
+        event = new EventOne();
+        defaultPubSub.publish(null, event);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(event));
 
-		msgWaitLock.drainPermits();
-		observedEvents.clear();
-		createEventListener(defaultPubSub, observedEvents, msgWaitLock);
-		LOG.info("Sending message from new broker to default broker...");
-		event = new EventOne();
-		secondPubSub.publish(null, event);
-		assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
-		assertThat(observedEvents, hasItem(event));
+        msgWaitLock.drainPermits();
+        observedEvents.clear();
+        createEventListener(defaultPubSub, observedEvents, msgWaitLock);
+        LOG.info("Sending message from new broker to default broker...");
+        event = new EventOne();
+        secondPubSub.publish(null, event);
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat(observedEvents, hasItem(event));
 
-		secondPubSub.destroy();
-		secondBroker.destroy();
-	}
+        secondPubSub.destroy();
+        secondBroker.destroy();
+    }
 }
