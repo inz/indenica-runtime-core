@@ -36,8 +36,6 @@ import eu.indenica.events.Event;
  */
 public class TestConnectivity {
 	private final static Logger LOG = LoggerFactory.getLogger();
-	final static URI mcastDiscoveryUri = URI.create("discovery:("
-			+ MessageBroker.discoveryUri.toString() + ")");
 
 	public static class CustomBrokerUriPubSub extends ActivemqPubSub {
 		public CustomBrokerUriPubSub(URI brokerUri) throws Exception {
@@ -82,6 +80,8 @@ public class TestConnectivity {
 		}
 	}
 
+	private String applicationName;
+	private NameProvider nameProvider;
 	private MessageBroker defaultBroker;
 	private PubSub defaultPubSub;
 	private Semaphore msgWaitLock;
@@ -100,7 +100,9 @@ public class TestConnectivity {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		defaultBroker = new MessageBroker();
+		applicationName = "test-" + System.currentTimeMillis();
+		nameProvider = new NameProvider(applicationName);
+		defaultBroker = new MessageBroker(nameProvider);
 		defaultPubSub = new ActivemqPubSub();
 		msgWaitLock = new Semaphore(0);
 		observedEvents = Lists.newArrayList();
@@ -168,7 +170,8 @@ public class TestConnectivity {
 	 */
 	@Test
 	public void testMcastDiscovery() throws Exception {
-		PubSub mcastPubSub = new CustomBrokerUriPubSub(mcastDiscoveryUri);
+		PubSub mcastPubSub =
+				new CustomBrokerUriPubSub(nameProvider.getMulticastDiscoveryUri());
 		assertThat(mcastPubSub, is(notNullValue()));
 		createEventListener(mcastPubSub, observedEvents, msgWaitLock);
 
@@ -203,7 +206,7 @@ public class TestConnectivity {
 	 */
 	@Test
 	public void testBrokerDiscovery() throws Exception {
-		MessageBroker secondBroker = new MessageBroker();
+		MessageBroker secondBroker = new MessageBroker(nameProvider);
 		PubSub secondPubSub =
 				new CustomBrokerUriPubSub(URI.create(secondBroker
 						.getConnectString()));
@@ -250,7 +253,7 @@ public class TestConnectivity {
 	 */
 	@Test
 	public void testBrokerDiscoveryOtherWay() throws Exception {
-		MessageBroker secondBroker = new MessageBroker();
+		MessageBroker secondBroker = new MessageBroker(nameProvider);
 		LOG.info("Second broker connect string: {}",
 				secondBroker.getConnectString());
 		PubSub secondPubSub =

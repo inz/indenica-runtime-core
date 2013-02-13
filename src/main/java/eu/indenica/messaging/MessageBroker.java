@@ -45,28 +45,11 @@ import eu.indenica.common.LoggerFactory;
 @Scope("COMPOSITE")
 public class MessageBroker {
 	private final static Logger LOG = LoggerFactory.getLogger();
+	private final static String ANNOUNCEMENTS_TOPIC_NAME =
+			"control.announcements";;
 
-	/**
-	 * The name of the multicast group Indenica components will use to discover
-	 * each other.
-	 */
-	public final static String mcastGroup = "indenica.internal.messaging";
-
-	/**
-	 * The broker network's discovery URI
-	 */
-	public final static URI discoveryUri = URI
-			.create("multicast://default?group=" + mcastGroup);
-
-	/**
-	 * The name of the broker to bind with VM transport.
-	 */
-	public final static URI vmTransportUri = URI.create("vm://localhost");
-
-	private static final String ANNOUNCEMENTS_TOPIC_NAME =
-			"control.announcements";
-
-	private BrokerService broker;
+	private final NameProvider nameProvider;
+	private final BrokerService broker;
 	private String hostname;
 	private int port;
 	private String connectString;
@@ -74,15 +57,48 @@ public class MessageBroker {
 	private ExecutorService announcements = Executors.newSingleThreadExecutor();
 
 	/**
-	 * Creates and starts the broker for the messaging fabric.
+	 * Creates and starts the broker for the messaging fabric using a default
+	 * application name.
+	 * 
+	 * <p>
+	 * <b>Note:</b> If you intend to start multiple applications in the same
+	 * network, you should supply a name for each application using constructor
+	 * {@link #MessageBroker(String)}.
 	 * 
 	 * @throws Exception
 	 *             if the broker cannot be started
 	 */
 	public MessageBroker() throws Exception {
+		this("default");
+	}
+
+	/**
+	 * Creates and starts the broker for the messaging fabric using the
+	 * specified application name.
+	 * 
+	 * @param applicationName
+	 *            the application name to use.
+	 * @throws Exception
+	 *             if the broker cannot be started
+	 */
+	public MessageBroker(String applicationName) throws Exception {
+		this(new NameProvider(applicationName));
+	}
+
+	/**
+	 * Creates and starts the broker for the messaging fabric using the given
+	 * {@link NameProvider} instance
+	 * 
+	 * @param nameProvider
+	 *            the {@link NameProvider} to use
+	 * @throws Exception
+	 *             if the broker cannot be started
+	 */
+	public MessageBroker(NameProvider nameProvider) throws Exception {
 		LOG.info("Starting message broker...");
 		LOG.trace("This is broker {} in this VM",
 				VMTransportFactory.SERVERS.size() + 1);
+		this.nameProvider = nameProvider;
 		broker = new BrokerService();
 		setBrokerName(broker);
 		broker.setPersistent(false);
@@ -141,7 +157,7 @@ public class MessageBroker {
 			throws URISyntaxException, Exception {
 		TransportConnector connector = new TransportConnector();
 		connector.setUri(new URI("tcp://" + getHostname() + ":" + getPort()));
-		connector.setDiscoveryUri(discoveryUri);
+		connector.setDiscoveryUri(nameProvider.getMulticastGroupUri());
 		broker.addConnector(connector);
 		return broker;
 	}
@@ -154,7 +170,9 @@ public class MessageBroker {
 	 * @return the broker
 	 */
 	private BrokerService setBrokerName(BrokerService broker) {
-		StringBuilder brokerName = new StringBuilder().append(mcastGroup);
+		StringBuilder brokerName =
+				new StringBuilder()
+						.append(nameProvider.getMulticastGroupName());
 		brokerName.append(".").append(getHostname());
 		brokerName.append(".").append(VMTransportFactory.SERVERS.size());
 		/**
@@ -176,10 +194,9 @@ public class MessageBroker {
 	 * @throws Exception
 	 *             if something goes wrong
 	 */
-	private static BrokerService
-			connectBrokerInterconnect(BrokerService broker) throws Exception {
-		// NetworkConnector networkConnector =
-		broker.addNetworkConnector(discoveryUri);
+	private BrokerService connectBrokerInterconnect(BrokerService broker)
+			throws Exception {
+		broker.addNetworkConnector(nameProvider.getMulticastGroupUri());
 		// networkConnector.setName(UUID.randomUUID().toString());
 		// networkConnector.setSuppressDuplicateTopicSubscriptions(true);
 		// networkConnector.setDuplex(true);
@@ -248,12 +265,13 @@ public class MessageBroker {
 	@Destroy
 	public void destroy() throws Exception {
 		LOG.debug("Shutting down message broker...");
-		broker.stop();
 		announcements.shutdown();
 		if(!announcements.awaitTermination(2, TimeUnit.SECONDS))
 			announcements.shutdownNow();
 		if(announcementsConnection != null)
 			announcementsConnection.close();
+
+		broker.stop();
 		LOG.info("Message broker shut down.");
 	}
 
