@@ -1,12 +1,8 @@
 package eu.indenica.monitoring.esper;
 
-import javax.xml.bind.annotation.XmlSeeAlso;
-
 import org.osoa.sca.annotations.Destroy;
-import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Init;
 import org.osoa.sca.annotations.Property;
-import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
 import com.espertech.esper.client.EPServiceProvider;

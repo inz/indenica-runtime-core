@@ -202,6 +202,13 @@ public class ActivemqPubSub implements PubSub, EventListener {
         }
         return instance;
     }
+    
+    /**
+     * Reset singleton.
+     */
+    public static synchronized void resetInstance() {
+        instance = null;
+    }
 
     /*
      * (non-Javadoc)
