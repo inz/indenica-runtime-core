@@ -21,6 +21,7 @@ import org.osoa.sca.annotations.Property;
 import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 
 import eu.indenica.adaptation.AdaptationEngine;
@@ -124,7 +125,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 			factBuffer.put(event.getEventType(), (Fact) event);
 			newFact = true;
 		}
-		
+
 		LOG.info("Update fact {}", event);
 
 		// TODO: probably need to update fact using session.update();
@@ -142,7 +143,8 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 		LOG.debug("Adding rule: {}", rule);
 		knowledgeBuilder.add(ResourceFactory
 				.newInputStreamResource(new ByteArrayInputStream(rule
-						.getStatement().getBytes())), ResourceType.DRL);
+						.getStatement().getBytes(Charsets.UTF_8))),
+				ResourceType.DRL);
 		registerInputEventTypes(rule);
 	}
 
