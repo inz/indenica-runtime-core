@@ -30,8 +30,9 @@ import eu.indenica.monitoring.MonitoringEngine;
 import eu.indenica.monitoring.MonitoringQueryImpl;
 
 /**
- * @author Christian Inzinger
+ * Test the various bits and pieces of the {@link EsperMonitoringEngine}.
  * 
+ * @author Christian Inzinger
  */
 public class TestEsperMonitoringEngine {
 	private static Logger LOG = LoggerFactory.getLogger();
@@ -61,6 +62,13 @@ public class TestEsperMonitoringEngine {
 		broker.destroy();
 	}
 
+	/**
+	 * The monitoring engine should allow to add a {@link MonitoringQuery} and
+	 * run it. The query should receive events and emit them as appropriate
+	 * 
+	 * @throws Exception
+	 *             if something goes wrong
+	 */
 	@Test
 	public void testAddSimpleQuery() throws Exception {
 		LOG.debug("Test adding simple query...");
