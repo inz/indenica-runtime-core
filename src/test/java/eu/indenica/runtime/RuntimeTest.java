@@ -11,7 +11,6 @@ import static org.junit.Assert.assertThat;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import org.apache.tuscany.sca.host.embedded.SCADomain;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,12 +32,12 @@ public class RuntimeTest {
 	private static Launch runtimeNode;
 
 	@BeforeClass
-	public static void setup() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
 		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("root"))
 				.setLevel(ch.qos.logback.classic.Level.TRACE);
-//		((ch.qos.logback.classic.Logger) LoggerFactory
-//				.getLogger("org.apache.activemq"))
-//				.setLevel(ch.qos.logback.classic.Level.INFO);
+		// ((ch.qos.logback.classic.Logger) LoggerFactory
+		// .getLogger("org.apache.activemq"))
+		// .setLevel(ch.qos.logback.classic.Level.INFO);
 
 		// String runtimeLocation =
 		// ContributionLocationHelper
@@ -62,7 +61,7 @@ public class RuntimeTest {
 	}
 
 	@AfterClass
-	public static void teardown() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 		LOG.debug("Stopping node...");
 		if(runtimeNode != null)
 			runtimeNode.destroy();
