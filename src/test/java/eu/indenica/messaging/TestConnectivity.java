@@ -3,6 +3,7 @@
  */
 package eu.indenica.messaging;
 
+import static eu.indenica.common.TestUtils.createEventListener;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -22,9 +23,9 @@ import org.slf4j.Logger;
 import com.google.common.collect.Lists;
 
 import eu.indenica.common.ActivemqPubSub;
-import eu.indenica.common.EventListener;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
+import eu.indenica.common.TestUtils;
 import eu.indenica.events.Event;
 
 /**
@@ -89,10 +90,7 @@ public class TestConnectivity {
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
-		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("root"))
-				.setLevel(ch.qos.logback.classic.Level.INFO);
-		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("eu.indenica"))
-				.setLevel(ch.qos.logback.classic.Level.TRACE);
+		TestUtils.setLogLevels();
 	}
 
 	/**
@@ -289,53 +287,5 @@ public class TestConnectivity {
 
 		secondPubSub.destroy();
 		secondBroker.destroy();
-	}
-
-	/**
-	 * Creates a default event listener for {@link EventOne}
-	 * 
-	 * @param pubSub
-	 *            the messaging fabric to use
-	 * @param observedEvents
-	 *            a collection to put received events in
-	 * @param msgWaitLock
-	 *            a semaphore to lock for external synchronization
-	 */
-	private static void
-			createEventListener(final PubSub pubSub,
-					final Collection<Event> observedEvents,
-					final Semaphore msgWaitLock) {
-		createEventListener(pubSub, new EventOne().getEventType(),
-				observedEvents, msgWaitLock);
-	}
-
-	/**
-	 * Creates an event listener for the specified event type.
-	 * 
-	 * @param pubSub
-	 *            the messaging fabric to use
-	 * @param eventType
-	 *            the event type to listen for
-	 * @param observedEvents
-	 *            a collection to put received events in
-	 * @param msgWaitLock
-	 *            a semaphore to lock for external synchronization
-	 */
-	private static void createEventListener(final PubSub pubSub,
-			final String eventType, final Collection<Event> observedEvents,
-			final Semaphore msgWaitLock) {
-		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		final String caller =
-				stackTrace[stackTrace[2].getMethodName().startsWith(
-						"createEvent") ? 3 : 2].getMethodName();
-		pubSub.registerListener(new EventListener() {
-			@Override
-			public void eventReceived(String source, Event event) {
-				LOG.debug("{} Received event {} in {} from {}, in {}",
-						new Object[] { caller, event, pubSub, source });
-				observedEvents.add(event);
-				msgWaitLock.release();
-			}
-		}, null, eventType);
 	}
 }
