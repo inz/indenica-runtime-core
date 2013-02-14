@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +26,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
 import org.apache.activemq.broker.jmx.ManagementContext;
+import org.apache.activemq.network.NetworkConnector;
 import org.apache.activemq.transport.vm.VMTransportFactory;
 import org.osoa.sca.annotations.Destroy;
 import org.osoa.sca.annotations.EagerInit;
@@ -196,10 +198,11 @@ public class MessageBroker {
      */
     private BrokerService connectBrokerInterconnect(BrokerService broker)
             throws Exception {
-        broker.addNetworkConnector(nameProvider.getMulticastGroupUri());
-        // networkConnector.setName(UUID.randomUUID().toString());
+        NetworkConnector networkConnector =
+                broker.addNetworkConnector(nameProvider.getMulticastGroupUri());
+        networkConnector.setName(UUID.randomUUID().toString());
         // networkConnector.setSuppressDuplicateTopicSubscriptions(true);
-        // networkConnector.setDuplex(true);
+        networkConnector.setDuplex(true);
         return broker;
     }
 
