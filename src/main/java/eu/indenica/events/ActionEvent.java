@@ -13,6 +13,7 @@ import eu.indenica.adaptation.Action;
  */
 @XmlRootElement
 public class ActionEvent extends Event {
+    private static final long serialVersionUID = -3121343307115688847L;
     public static final String ACTION_EVENT_TYPE = "action";
     private final Action action;
 
