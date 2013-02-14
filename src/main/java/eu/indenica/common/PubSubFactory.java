@@ -11,8 +11,4 @@ public class PubSubFactory {
     public static PubSub getPubSub() {
         return ActivemqPubSub.getInstance();
     }
-    
-    public static void resetInstance() {
-        ActivemqPubSub.resetInstance();
-    }
 }

@@ -65,14 +65,25 @@ public class ActivemqPubSub implements PubSub, EventListener {
         connection.start();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /**
      * @see eu.indenica.common.PubSub#destroy()
      */
     @Override
-    public void destroy() throws Exception {
+    public void destroy() throws JMSException {
         connection.close();
+    }
+
+    /**
+     * @see java.lang.Object#finalize()
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            destroy();
+        } catch(JMSException e) {
+            LOG.error("Could not close connection!", e);
+        }
+        super.finalize();
     }
 
     /*
@@ -187,27 +198,18 @@ public class ActivemqPubSub implements PubSub, EventListener {
         publish(source, event);
     }
 
-    private static ActivemqPubSub instance = null;
-
     /**
-     * @return An instance of the messaging client fabric.
+     * Returns a new instanc of the messaging fabric client
+     * 
+     * @return a new instance of the messaging fabric client.
      */
     public static synchronized PubSub getInstance() {
-        if(instance == null) {
-            try {
-                instance = new ActivemqPubSub();
-            } catch(Exception e) {
-                LOG.error("Error creating pubsub instance!", e);
-            }
+        try {
+            return new ActivemqPubSub();
+        } catch(Exception e) {
+            LOG.error("Error creating pubsub instance!", e);
+            return null;
         }
-        return instance;
-    }
-    
-    /**
-     * Reset singleton.
-     */
-    public static synchronized void resetInstance() {
-        instance = null;
     }
 
     /*

@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import eu.indenica.common.ActivemqPubSub;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
-import eu.indenica.common.PubSubFactory;
 import eu.indenica.events.Event;
 import eu.indenica.events.EventOne;
 import eu.indenica.messaging.MessageBroker;
@@ -65,7 +64,6 @@ public class TestEsperMonitoringEngine {
     public void tearDown() throws Exception {
         msgWaitLock.drainPermits();
         monitoringEngine.destroy();
-        PubSubFactory.resetInstance();
         pubSub.destroy();
         broker.destroy();
     }
