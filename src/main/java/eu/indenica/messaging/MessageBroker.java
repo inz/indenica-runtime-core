@@ -48,7 +48,8 @@ import eu.indenica.common.LoggerFactory;
 public class MessageBroker {
     private final static Logger LOG = LoggerFactory.getLogger();
     private final static String ANNOUNCEMENTS_TOPIC_NAME =
-            "control.announcements";;
+            ManagementNameProvider
+                    .getBroadcastManagementTopicName("announcements");
 
     private final MulticastNameProvider nameProvider;
     private final BrokerService broker;
