@@ -102,20 +102,13 @@ public class MessageBroker {
                 VMTransportFactory.SERVERS.size() + 1);
         this.nameProvider = nameProvider;
         broker = new BrokerService();
-        setBrokerName(broker);
+        setBrokerName();
         broker.setPersistent(false);
-        // broker.setUseJmx(false);
         broker.getSystemUsage().getTempUsage().setLimit(1024 * 1000); // 1000kB
-        ManagementContext managementContext = broker.getManagementContext();
+        setJmxProperties();
 
-        /**
-         * Set unique free port for management connector in case there are
-         * multiple brokers running on one machine.
-         */
-        managementContext.setConnectorPort(getFreePort());
-
-        connectTcpTransport(broker);
-        connectBrokerInterconnect(broker);
+        connectTcpTransport();
+        connectBrokerInterconnect();
 
         broker.start();
         connectString = broker.getDefaultSocketURIString();
@@ -123,6 +116,24 @@ public class MessageBroker {
         connectAnnouncementListener();
 
         LOG.info("Broker {} started.", broker.getBrokerName());
+    }
+
+    /**
+     * Set relevant JMX properties.
+     * 
+     * <p>
+     * Ensures that each broker listens on a free port.
+     */
+    private BrokerService setJmxProperties() {
+        // broker.setUseJmx(false);
+        ManagementContext managementContext = broker.getManagementContext();
+
+        /**
+         * Set unique free port for management connector in case there are
+         * multiple brokers running on one machine.
+         */
+        managementContext.setConnectorPort(getFreePort());
+        return broker;
     }
 
     /**
@@ -145,18 +156,16 @@ public class MessageBroker {
     }
 
     /**
-     * Connect the TCP transport for the given broker.
+     * Connect the TCP transport for the active broker.
      * 
-     * @param broker
-     *            the broker to be modified
      * @return the broker, after modification
      * @throws URISyntaxException
      *             if hostname and/or port were invalid
      * @throws Exception
      *             if something goes wrong
      */
-    private BrokerService connectTcpTransport(BrokerService broker)
-            throws URISyntaxException, Exception {
+    private BrokerService connectTcpTransport() throws URISyntaxException,
+            Exception {
         TransportConnector connector = new TransportConnector();
         connector.setUri(new URI("tcp://" + getHostname() + ":" + getPort()));
         connector.setDiscoveryUri(nameProvider.getMulticastGroupUri());
@@ -171,7 +180,7 @@ public class MessageBroker {
      *            the broker needing a name
      * @return the broker
      */
-    private BrokerService setBrokerName(BrokerService broker) {
+    private BrokerService setBrokerName() {
         StringBuilder brokerName =
                 new StringBuilder()
                         .append(nameProvider.getMulticastGroupName());
@@ -190,14 +199,16 @@ public class MessageBroker {
     /**
      * Connect broker interconnect multicast discovery network connector.
      * 
+     * <p>
+     * TODO: Should probably make sure that only one broker interconnect exists.
+     * 
      * @param broker
      *            the broker to be modified
      * @return the broker, modified.
      * @throws Exception
      *             if something goes wrong
      */
-    private BrokerService connectBrokerInterconnect(BrokerService broker)
-            throws Exception {
+    private BrokerService connectBrokerInterconnect() throws Exception {
         NetworkConnector networkConnector =
                 broker.addNetworkConnector(nameProvider.getMulticastGroupUri());
         networkConnector.setName(UUID.randomUUID().toString());
