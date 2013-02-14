@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset.Entry;
 
 import eu.indenica.adaptation.AdaptationEngine;
 import eu.indenica.adaptation.AdaptationRule;
@@ -44,6 +45,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
     private StatefulKnowledgeSession session;
     private KnowledgeBuilder knowledgeBuilder;
 
+    private Map<String, Object> globals = Maps.newHashMap();
     private Map<String, Fact> factBuffer = Maps.newHashMap();
 
     // @Property
@@ -75,6 +77,22 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
         LOG.debug("Setting input event types: {}", inputEventTypes);
         this.inputEventTypes = inputEventTypes;
     }
+    
+    /** Sets a global value in the rule context
+     * @param identifier the global identifier
+     * @param value the value assigned to the global identifier
+     */
+    public void setGlobal(String identifier, Object value) {
+        globals.put(identifier, value);
+        setGlobals();
+    }
+    
+    private void setGlobals() {
+        if(session == null)
+            return;
+        for(Map.Entry<String, Object> global : globals.entrySet())
+            session.setGlobal(global.getKey(), global.getValue());
+    }
 
     @Init
     @Override
@@ -91,7 +109,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
         knowledgeBase.addKnowledgePackages(knowledgeBuilder
                 .getKnowledgePackages());
         session = knowledgeBase.newStatefulKnowledgeSession();
-        session.setGlobal("publisher", this);
+        setGlobal("publisher", this);
         session.fireAllRules();
         LOG.debug("Adaptation Engine started.");
     }
