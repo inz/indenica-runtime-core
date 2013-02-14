@@ -11,15 +11,20 @@ import com.google.common.base.Joiner;
 
 /**
  * @author Christian Inzinger
- * 
  */
-public final class MulticastNameProvider {
+public final class DiscoveryNameProvider {
+    /**
+     * Default broker URI for clients to connect to. 
+     */
+    public static final URI DEFAULT_BROKER_URI = URI
+            .create("vm://localhost?create=false&waitForStart=2000");
+    
     /**
      * Prefix for multicast group names.
      */
-    public final static String MCAST_GROUP_PREFIX = "indenica.internal";
-    
-    private final static Joiner nameJoiner = Joiner.on(".").skipNulls();
+    public static final String MCAST_GROUP_PREFIX = "indenica.internal";
+
+    private static final Joiner nameJoiner = Joiner.on(".").skipNulls();
 
     private final String applicationName;
 
@@ -29,10 +34,12 @@ public final class MulticastNameProvider {
      * @param applicationName
      *            the application name
      */
-    public MulticastNameProvider(@Nonnull final String applicationName) {
-        if(applicationName.matches("[^a-z_\\-]"))
+    public DiscoveryNameProvider(@Nonnull final String applicationName) {
+        if(applicationName.matches("[^a-z_\\-]")) {
             throw new IllegalArgumentException(
                     "Application name cannot contain spaces or special characters!");
+        }
+
         this.applicationName = applicationName;
     }
 

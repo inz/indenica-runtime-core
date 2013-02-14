@@ -82,7 +82,7 @@ public class TestConnectivity {
     }
 
     private String applicationName;
-    private MulticastNameProvider nameProvider;
+    private DiscoveryNameProvider nameProvider;
     private MessageBroker defaultBroker;
     private PubSub defaultPubSub;
     private Semaphore msgWaitLock;
@@ -99,7 +99,7 @@ public class TestConnectivity {
     @Before
     public void setUp() throws Exception {
         applicationName = "test-" + System.currentTimeMillis();
-        nameProvider = new MulticastNameProvider(applicationName);
+        nameProvider = new DiscoveryNameProvider(applicationName);
         defaultBroker = new MessageBroker(nameProvider);
         defaultPubSub = new ActivemqPubSub();
         msgWaitLock = new Semaphore(0);

@@ -19,6 +19,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 
 import eu.indenica.events.Event;
+import eu.indenica.messaging.DiscoveryNameProvider;
 
 /**
  * Messaging fabric accessing JMS/ActiveMQ embedded brokers and multicast
@@ -31,8 +32,6 @@ public class ActivemqPubSub implements PubSub, EventListener {
     private final static Logger LOG = LoggerFactory.getLogger();
     public final static String baseTopic = "indenica.event";
     public final static String pathSeparator = ".";
-    protected static URI defaultBrokerUri = URI
-            .create("vm://localhost?create=false&waitForStart=2000");
     private final URI brokerUri;
     private final Connection connection;
 
@@ -44,7 +43,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
      * 
      */
     public ActivemqPubSub() throws Exception {
-        this(defaultBrokerUri);
+        this(DiscoveryNameProvider.DEFAULT_BROKER_URI);
     }
 
     /**
@@ -220,7 +219,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
     @Override
     public String toString() {
         return new StringBuilder().append("#<").append(getClass().getName())
-                .append(": ").append("defaultBrokerUri: ").append(brokerUri)
+                .append(": ").append("DEFAULT_BROKER_URI: ").append(brokerUri)
                 .append(">").toString();
     }
 }

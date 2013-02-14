@@ -15,7 +15,7 @@ public class ManagementNameProvider {
     /**
      * Common Prefix for management infrastructure.
      */
-    private static final String CONTROL_PREFIX = "control";
+    public static final String MANAGEMENT_PREFIX = "management";
 
     private static final Joiner joiner = Joiner.on(".");
 
@@ -26,8 +26,8 @@ public class ManagementNameProvider {
      *            the topic name
      * @return the topic name in the management namespace
      */
-    public static String getBroadcastManagementTopicName(String topic) {
-        return joiner.join(CONTROL_PREFIX, topic);
+    public static String getManagementTopicName(String topic) {
+        return joiner.join(MANAGEMENT_PREFIX, topic);
     }
 
     /**
@@ -43,6 +43,6 @@ public class ManagementNameProvider {
      */
     public static String getServiceManagementQueueName(String nodeName,
             String serviceName) {
-        return joiner.join(CONTROL_PREFIX, nodeName, serviceName);
+        return joiner.join(MANAGEMENT_PREFIX, nodeName, serviceName);
     }
 }

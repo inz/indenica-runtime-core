@@ -51,7 +51,7 @@ public class MessageBroker {
             ManagementNameProvider
                     .getBroadcastManagementTopicName("announcements");
 
-    private final MulticastNameProvider nameProvider;
+    private final DiscoveryNameProvider nameProvider;
     private final BrokerService broker;
     private String hostname;
     private int port;
@@ -85,19 +85,19 @@ public class MessageBroker {
      *             if the broker cannot be started
      */
     public MessageBroker(String applicationName) throws Exception {
-        this(new MulticastNameProvider(applicationName));
+        this(new DiscoveryNameProvider(applicationName));
     }
 
     /**
      * Creates and starts the broker for the messaging fabric using the given
-     * {@link MulticastNameProvider} instance
+     * {@link DiscoveryNameProvider} instance
      * 
      * @param nameProvider
-     *            the {@link MulticastNameProvider} to use
+     *            the {@link DiscoveryNameProvider} to use
      * @throws Exception
      *             if the broker cannot be started
      */
-    public MessageBroker(MulticastNameProvider nameProvider) throws Exception {
+    public MessageBroker(DiscoveryNameProvider nameProvider) throws Exception {
         LOG.info("Starting message broker...");
         LOG.trace("This is broker {} in this VM",
                 VMTransportFactory.SERVERS.size() + 1);
