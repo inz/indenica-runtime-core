@@ -24,4 +24,14 @@ public class EventOne extends Event {
     public String getMessage() {
         return message;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("EventOne [message=").append(message).append("]");
+        return builder.toString();
+    }
 }

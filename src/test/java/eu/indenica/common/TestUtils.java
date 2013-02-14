@@ -60,6 +60,29 @@ public class TestUtils {
     public static void createEventListener(final PubSub pubSub,
             final String eventType, final Collection<Event> observedEvents,
             final Semaphore msgWaitLock) {
+        createEventListener(pubSub, null, eventType, observedEvents,
+                msgWaitLock);
+    }
+
+    /**
+     * Creates an event listener for the specified event type.
+     * 
+     * @param pubSub
+     *            the messaging fabric to use
+     * @param source
+     *            the component name to listen for
+     * @param eventType
+     *            the event type to listen for
+     * @param observedEvents
+     *            a collection to put received events in
+     * @param msgWaitLock
+     *            a semaphore to lock for external synchronization
+     */
+    public static void
+            createEventListener(final PubSub pubSub, final String source,
+                    final String eventType,
+                    final Collection<Event> observedEvents,
+                    final Semaphore msgWaitLock) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         final String caller =
                 stackTrace[stackTrace[2].getMethodName().startsWith(
@@ -72,6 +95,6 @@ public class TestUtils {
                 observedEvents.add(event);
                 msgWaitLock.release();
             }
-        }, null, eventType);
+        }, source, eventType);
     }
 }
