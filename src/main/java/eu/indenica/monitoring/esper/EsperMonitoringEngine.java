@@ -127,7 +127,23 @@ public class EsperMonitoringEngine implements MonitoringEngine,
         mgmtClient.registerListener(new MessageListener() {
             @Override
             public void onMessage(Message message) {
-                LOG.debug("Received message {}", message);
+                String command = null;
+                String queryName = null;
+                try {
+                    LOG.trace("Received message {}", message);
+                    command = message.getStringProperty("command");
+                    queryName = message.getStringProperty("queryName");
+                } catch(JMSException e) {
+                    LOG.error("Error processing message!", e);
+                }
+
+                if("startQuery".equals(command)) {
+                    startQuery(queryName);
+                } else if("stopQuery".equals(command)) {
+                    stopQuery(queryName);
+                } else {
+                    LOG.error("Could not understand message {}", message);
+                }
             }
         });
     }
@@ -161,6 +177,7 @@ public class EsperMonitoringEngine implements MonitoringEngine,
                 epService.getEPAdministrator().getStatement(queryName);
         if(statement == null)
             throw new IllegalArgumentException("No such query: " + queryName);
+        LOG.debug("Starting query '{}'", queryName);
         statement.start();
     }
 
@@ -173,6 +190,7 @@ public class EsperMonitoringEngine implements MonitoringEngine,
                 epService.getEPAdministrator().getStatement(queryName);
         if(statement == null)
             throw new IllegalArgumentException("No such query: " + queryName);
+        LOG.debug("Stopping query '{}'", queryName);
         statement.stop();
     }
 
