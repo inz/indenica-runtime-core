@@ -26,8 +26,8 @@ import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.events.Event;
 import eu.indenica.events.EventOne;
-import eu.indenica.messaging.MessageBroker;
 import eu.indenica.messaging.DiscoveryNameProvider;
+import eu.indenica.messaging.MessageBroker;
 import eu.indenica.monitoring.MonitoringEngine;
 import eu.indenica.monitoring.MonitoringQuery;
 import eu.indenica.monitoring.MonitoringQueryImpl;
@@ -53,7 +53,8 @@ public class TestEsperMonitoringEngine {
     @Before
     public void setUp() throws Exception {
         msgWaitLock = new Semaphore(0);
-        nameProvider = new DiscoveryNameProvider("test-" + System.currentTimeMillis());
+        nameProvider =
+                new DiscoveryNameProvider("test-" + System.currentTimeMillis());
         broker = new MessageBroker(nameProvider);
         pubSub = new ActivemqPubSub();
         monitoringEngine = new EsperMonitoringEngine();
@@ -78,7 +79,9 @@ public class TestEsperMonitoringEngine {
     @Test
     public void testAddSimpleQuery() throws Exception {
         LOG.debug("Test adding simple query...");
+        String queryName = "query-" + System.currentTimeMillis();
         MonitoringQueryImpl query = new MonitoringQueryImpl();
+        query.setName(queryName);
         query.setInputEventTypes(new String[] { "input,"
                 + EventOne.class.getCanonicalName() });
         query.setOutputEventTypes(new String[] { EventOne.class
@@ -87,7 +90,7 @@ public class TestEsperMonitoringEngine {
         monitoringEngine.addQuery(query);
 
         Collection<Event> observedEvents = Lists.newArrayList();
-        createEventListener(pubSub, new EventOne().getEventType(),
+        createEventListener(pubSub, queryName, new EventOne().getEventType(),
                 observedEvents, msgWaitLock);
 
         EventOne event = new EventOne();
@@ -96,6 +99,18 @@ public class TestEsperMonitoringEngine {
 
         assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
         assertThat(observedEvents, hasItem((Event) event));
+
+        LOG.info("Deactivating query...");
+        monitoringEngine.stopQuery(queryName);
+
+        observedEvents.clear();
+        event = new EventOne();
+        event.setMessage("should not arrive " + System.currentTimeMillis());
+        pubSub.publish("input", event);
+
+        // This event should not end up in observedEvents
+        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(false));
+        assertThat(observedEvents.size(), is(0));
     }
 
 }

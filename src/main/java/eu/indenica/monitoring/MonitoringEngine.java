@@ -13,6 +13,8 @@ import eu.indenica.common.RuntimeComponent;
  * @author Christian Inzinger
  */
 public interface MonitoringEngine extends RuntimeComponent, EventListener {
+    static String SERVICE_NAME = "monitoring";
+
     /**
      * Add a {@link MonitoringQuery} to the monitoring engine and start it.
      * 
@@ -26,14 +28,18 @@ public interface MonitoringEngine extends RuntimeComponent, EventListener {
      * 
      * @param queryName
      *            the name of the query to start
+     * @throws IllegalArgumentException
+     *             if no query with the given name exists
      */
-    void startQuery(String queryName);
+    void startQuery(String queryName) throws IllegalArgumentException;
 
     /**
      * Stop monitoring query with the given name
      * 
      * @param queryName
      *            the name of the query to stop
+     * @throws IllegalArgumentException
+     *             if no query with the given name exists
      */
-    void stopQuery(String queryName);
+    void stopQuery(String queryName) throws IllegalArgumentException;
 }
