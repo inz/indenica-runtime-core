@@ -67,8 +67,8 @@ public class ManagementClient {
      * @throws JMSException
      *             if something goes wrong
      */
-    public ManagementClient(String nodeName, String serviceName,
-            URI brokerUri) throws JMSException {
+    public ManagementClient(String nodeName, String serviceName, URI brokerUri)
+            throws JMSException {
         this.nodeName = nodeName;
         this.serviceName = serviceName;
         LOG.info("Connecting to {}...", brokerUri);
@@ -202,20 +202,5 @@ public class ManagementClient {
      */
     public void stop() throws JMSException {
         connection.close();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#finalize()
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            stop();
-        } catch(JMSException e) {
-            LOG.warn("Could not close connection.", e);
-        }
-        super.finalize();
     }
 }
