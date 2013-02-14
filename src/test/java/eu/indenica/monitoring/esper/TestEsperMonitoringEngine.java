@@ -27,7 +27,7 @@ import eu.indenica.common.PubSub;
 import eu.indenica.events.Event;
 import eu.indenica.events.EventOne;
 import eu.indenica.messaging.MessageBroker;
-import eu.indenica.messaging.NameProvider;
+import eu.indenica.messaging.MulticastNameProvider;
 import eu.indenica.monitoring.MonitoringEngine;
 import eu.indenica.monitoring.MonitoringQuery;
 import eu.indenica.monitoring.MonitoringQueryImpl;
@@ -40,7 +40,7 @@ import eu.indenica.monitoring.MonitoringQueryImpl;
 public class TestEsperMonitoringEngine {
     private static Logger LOG = LoggerFactory.getLogger();
     private Semaphore msgWaitLock;
-    private NameProvider nameProvider;
+    private MulticastNameProvider nameProvider;
     private PubSub pubSub;
     private MessageBroker broker;
     private MonitoringEngine monitoringEngine;
@@ -53,7 +53,7 @@ public class TestEsperMonitoringEngine {
     @Before
     public void setUp() throws Exception {
         msgWaitLock = new Semaphore(0);
-        nameProvider = new NameProvider("test-" + System.currentTimeMillis());
+        nameProvider = new MulticastNameProvider("test-" + System.currentTimeMillis());
         broker = new MessageBroker(nameProvider);
         pubSub = new ActivemqPubSub();
         monitoringEngine = new EsperMonitoringEngine();

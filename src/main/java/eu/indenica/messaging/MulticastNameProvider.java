@@ -13,12 +13,12 @@ import com.google.common.base.Joiner;
  * @author Christian Inzinger
  * 
  */
-public final class NameProvider {
+public final class MulticastNameProvider {
     /**
-     * General prefix for all messaging-related group names.
+     * Prefix for multicast group names.
      */
     public final static String MCAST_GROUP_PREFIX = "indenica.internal";
-
+    
     private final static Joiner nameJoiner = Joiner.on(".").skipNulls();
 
     private final String applicationName;
@@ -29,7 +29,7 @@ public final class NameProvider {
      * @param applicationName
      *            the application name
      */
-    public NameProvider(@Nonnull String applicationName) {
+    public MulticastNameProvider(@Nonnull final String applicationName) {
         if(applicationName.matches("[^a-z_\\-]"))
             throw new IllegalArgumentException(
                     "Application name cannot contain spaces or special characters!");
