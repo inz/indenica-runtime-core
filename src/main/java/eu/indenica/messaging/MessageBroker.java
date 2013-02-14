@@ -9,20 +9,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
 import org.apache.activemq.broker.jmx.ManagementContext;
@@ -47,17 +38,13 @@ import eu.indenica.common.LoggerFactory;
 @Scope("COMPOSITE")
 public class MessageBroker {
     private final static Logger LOG = LoggerFactory.getLogger();
-    private final static String ANNOUNCEMENTS_TOPIC_NAME =
-            ManagementNameProvider
-                    .getBroadcastManagementTopicName("announcements");
 
     private final DiscoveryNameProvider nameProvider;
     private final BrokerService broker;
+    private final ManagementClient mgmtClient;
     private String hostname;
     private int port;
     private String connectString;
-    private Connection announcementsConnection;
-    private ExecutorService announcements = Executors.newSingleThreadExecutor();
 
     /**
      * Creates and starts the broker for the messaging fabric using a default
@@ -114,6 +101,8 @@ public class MessageBroker {
         broker.start();
         connectString = broker.getDefaultSocketURIString();
 
+        mgmtClient =
+                new ManagementClient(broker.getBrokerName(), "broker");
         connectAnnouncementListener();
 
         LOG.info("Broker {} started.", broker.getBrokerName());
@@ -228,47 +217,27 @@ public class MessageBroker {
      */
     private void connectAnnouncementListener() throws JMSException {
         LOG.debug("Connecting announcement listener at {}", connectString);
-        announcementsConnection =
-                new ActiveMQConnectionFactory(connectString).createConnection();
-        announcementsConnection.start();
-
-        announcements.submit(new Callable<Void>() {
+        final String announcementsTopic = "broker.announcements";
+        mgmtClient.registerBroadcastListener(new MessageListener() {
             @Override
-            public Void call() throws Exception {
-                Session session =
-                        announcementsConnection.createSession(false,
-                                Session.AUTO_ACKNOWLEDGE);
-                MessageConsumer consumer =
-                        session.createConsumer(session
-                                .createTopic(ANNOUNCEMENTS_TOPIC_NAME));
-                consumer.setMessageListener(new MessageListener() {
-                    @Override
-                    public void onMessage(Message message) {
-                        String brokerName = broker.getBrokerName();
-                        String newBrokerName = null;
-                        try {
-                            newBrokerName =
-                                    message.getStringProperty("brokerName");
-                        } catch(JMSException e) {
-                            LOG.error("Could not understand message!", e);
-                        }
-                        if(!brokerName.equals(newBrokerName))
-                            LOG.info("ANN ({}): Broker {} joined.", brokerName,
-                                    newBrokerName);
+            public void onMessage(Message message) {
+                String brokerName = broker.getBrokerName();
+                String newBrokerName = null;
+                try {
+                    newBrokerName = message.getStringProperty("brokerName");
+                } catch(JMSException e) {
+                    LOG.error("Could not understand message!", e);
+                }
+                if(!brokerName.equals(newBrokerName))
+                    LOG.info("ANN ({}): Broker {} joined.", brokerName,
+                            newBrokerName);
 
-                    }
-                });
-
-                MessageProducer producer =
-                        session.createProducer(session
-                                .createTopic(ANNOUNCEMENTS_TOPIC_NAME));
-                Message announcement = session.createMapMessage();
-                announcement.setStringProperty("brokerName",
-                        broker.getBrokerName());
-                producer.send(announcement);
-                return null;
             }
-        });
+        }, announcementsTopic);
+
+        Message announcement = mgmtClient.createMapMessage();
+        announcement.setStringProperty("brokerName", broker.getBrokerName());
+        mgmtClient.sendBroadcast(announcement, announcementsTopic);
     }
 
     /**
@@ -280,12 +249,8 @@ public class MessageBroker {
     @Destroy
     public void destroy() throws Exception {
         LOG.debug("Shutting down message broker...");
-        announcements.shutdown();
-        if(!announcements.awaitTermination(2, TimeUnit.SECONDS))
-            announcements.shutdownNow();
-        if(announcementsConnection != null)
-            announcementsConnection.close();
 
+        mgmtClient.stop();
         broker.stop();
         LOG.info("Message broker shut down.");
     }
