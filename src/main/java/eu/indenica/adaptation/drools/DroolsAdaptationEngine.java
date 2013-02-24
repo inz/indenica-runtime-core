@@ -44,6 +44,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
     private KnowledgeBase knowledgeBase;
     private StatefulKnowledgeSession session;
     private KnowledgeBuilder knowledgeBuilder;
+    private ExecutorService executor;
 
     private Map<String, Object> globals = Maps.newHashMap();
     private Map<String, Fact> factBuffer = Maps.newHashMap();
@@ -110,7 +111,14 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
                 .getKnowledgePackages());
         session = knowledgeBase.newStatefulKnowledgeSession();
         setGlobal("publisher", this);
-        session.fireAllRules();
+        executor = Executors.newSingleThreadExecutor();
+        executor.submit(new Callable<Void>() {
+            public Void call() throws Exception {
+                LOG.trace("Firing rules...");
+                session.fireUntilHalt();
+                return null;
+            }
+        });
         LOG.debug("Adaptation Engine started.");
     }
 
@@ -118,9 +126,9 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
     @Override
     public void destroy() throws Exception {
         LOG.debug("Stopping Adaptation Engine...");
+        session.halt();
         session.dispose();
         executor.shutdown();
-        executor.shutdownNow();
         executor.awaitTermination(2, TimeUnit.SECONDS);
         LOG.info("Adaptation Engine stopped.");
     }
@@ -152,7 +160,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
         fact.setEvent(event);
         if(newFact)
             setFact(fact);
-        session.fireAllRules();
+        // session.fireAllRules();
         return fact;
     }
 
@@ -198,8 +206,6 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
         LOG.info("Perform action {}", actionEvent);
         pubsub.publish(this.getClass().getName(), actionEvent);
     }
-
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public void publishEvent(final Event event) throws Exception {
         LOG.info("Publishing event {}", event);
