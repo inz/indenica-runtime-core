@@ -15,15 +15,12 @@ import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
 import org.osoa.sca.annotations.Destroy;
-import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Init;
 import org.osoa.sca.annotations.Property;
-import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset.Entry;
 
 import eu.indenica.adaptation.AdaptationEngine;
 import eu.indenica.adaptation.AdaptationRule;
@@ -35,15 +32,14 @@ import eu.indenica.common.PubSubFactory;
 import eu.indenica.events.ActionEvent;
 import eu.indenica.events.Event;
 
-@Scope("COMPOSITE")
-@EagerInit
+//@Scope("COMPOSITE")
+//@EagerInit
 public class DroolsAdaptationEngine implements AdaptationEngine {
     private static Logger LOG = LoggerFactory.getLogger();
 
     private PubSub pubsub;
     private KnowledgeBase knowledgeBase;
     private StatefulKnowledgeSession session;
-    private KnowledgeBuilder knowledgeBuilder;
     private ExecutorService executor;
 
     private Map<String, Object> globals = Maps.newHashMap();
@@ -78,21 +74,29 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
         LOG.debug("Setting input event types: {}", inputEventTypes);
         this.inputEventTypes = inputEventTypes;
     }
-    
-    /** Sets a global value in the rule context
-     * @param identifier the global identifier
-     * @param value the value assigned to the global identifier
+
+    /**
+     * Sets a global value in the rule context
+     * 
+     * @param identifier
+     *            the global identifier
+     * @param value
+     *            the value assigned to the global identifier
      */
     public void setGlobal(String identifier, Object value) {
         globals.put(identifier, value);
         setGlobals();
     }
-    
+
     private void setGlobals() {
         if(session == null)
             return;
-        for(Map.Entry<String, Object> global : globals.entrySet())
+        for(Map.Entry<String, Object> global : globals.entrySet()) {
+            if(session.getGlobal(global.getKey()) == null) {
+                addDummyRule(global.getKey(), global.getValue().getClass());
+            }
             session.setGlobal(global.getKey(), global.getValue());
+        }
     }
 
     @Init
@@ -100,17 +104,17 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
     public void init() throws Exception {
         LOG.info("Initializing Adaptation Engine...");
         this.pubsub = PubSubFactory.getPubSub();
-        knowledgeBuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-        for(AdaptationRule rule : rules)
-            addRule(rule);
 
-        if(knowledgeBuilder.hasErrors())
-            LOG.error("Errors: {}", knowledgeBuilder.getErrors());
         knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
-        knowledgeBase.addKnowledgePackages(knowledgeBuilder
-                .getKnowledgePackages());
-        session = knowledgeBase.newStatefulKnowledgeSession();
+
         setGlobal("publisher", this);
+        if(rules != null)
+            for(AdaptationRule rule : rules)
+                addRule(rule);
+
+        session = knowledgeBase.newStatefulKnowledgeSession();
+        setGlobals();
+
         executor = Executors.newSingleThreadExecutor();
         executor.submit(new Callable<Void>() {
             public Void call() throws Exception {
@@ -130,6 +134,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
         session.dispose();
         executor.shutdown();
         executor.awaitTermination(2, TimeUnit.SECONDS);
+        pubsub.destroy();
         LOG.info("Adaptation Engine stopped.");
     }
 
@@ -167,11 +172,38 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
     @Override
     public void addRule(AdaptationRule rule) {
         LOG.debug("Adding rule: {}", rule);
+        KnowledgeBuilder knowledgeBuilder =
+                KnowledgeBuilderFactory.newKnowledgeBuilder();
         knowledgeBuilder.add(ResourceFactory
                 .newInputStreamResource(new ByteArrayInputStream(rule
                         .getStatement().getBytes(Charsets.UTF_8))),
                 ResourceType.DRL);
         registerInputEventTypes(rule);
+        if(knowledgeBuilder.hasErrors())
+            LOG.error("Errors: {}", knowledgeBuilder.getErrors());
+        knowledgeBase.addKnowledgePackages(knowledgeBuilder
+                .getKnowledgePackages());
+    }
+
+    /**
+     * Add noop rule referencing the specified global value.
+     */
+    private void addDummyRule(String name, Class<?> clazz) {
+        LOG.debug("Adding access rule for global '{}'...", name);
+        AdaptationRuleImpl rule = new AdaptationRuleImpl();
+
+        StringBuilder stmt = new StringBuilder();
+        stmt.append("package ").append(getClass().getPackage().getName())
+                .append(";\n");
+        stmt.append("global ").append(clazz.getCanonicalName()).append(" ")
+                .append(name).append(";\n");
+
+        stmt.append("rule \"Global ").append(name).append("\"\n")
+                .append("when eval(false)\n")
+                .append("then throw new RuntimeException(\"Unexpected!\");\n")
+                .append("end");
+        rule.setStatement(stmt.toString());
+        addRule(rule);
     }
 
     /**
@@ -179,7 +211,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
      */
     private void registerInputEventTypes(AdaptationRule rule) {
         if(rule.getInputEventTypes() == null) {
-            LOG.warn("No input events for rule {}", rule);
+            LOG.debug("No input events for rule {}", rule);
             return;
         }
         for(String eventType : rule.getInputEventTypes()) {
