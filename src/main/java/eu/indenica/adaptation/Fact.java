@@ -39,4 +39,56 @@ public class Fact extends Event {
         throw new UnsupportedOperationException();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Fact [event=");
+        if(this.equals(event)) {
+            builder.append("self");
+        } else {
+            builder.append(event);
+        }
+        builder.append(" ").append(super.toString()).append("]");
+        return builder.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((event == null || event == this) ? 0 : event.hashCode());
+        return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if(this == obj)
+            return true;
+        if(!super.equals(obj))
+            return false;
+        if(!(obj instanceof Fact))
+            return false;
+        Fact other = (Fact) obj;
+        if(event == null) {
+            if(other.event != null)
+                return false;
+        } else if(!event.equals(other.event))
+            return false;
+        return true;
+    }
 }
