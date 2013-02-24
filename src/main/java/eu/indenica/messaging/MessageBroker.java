@@ -248,7 +248,7 @@ public class MessageBroker {
      */
     @Destroy
     public void destroy() throws Exception {
-        LOG.debug("Shutting down message broker...");
+        LOG.debug("Shutting down message broker {}...", broker.getBrokerName());
 
         mgmtClient.stop();
         broker.stop();
