@@ -35,7 +35,7 @@ import eu.indenica.events.Event;
  * 
  * @author Christian Inzinger
  */
-public class TestConnectivity {
+public class ConnectivityTest {
     private final static Logger LOG = LoggerFactory.getLogger();
 
     public static class CustomBrokerUriPubSub extends ActivemqPubSub {
@@ -98,7 +98,8 @@ public class TestConnectivity {
      */
     @Before
     public void setUp() throws Exception {
-        applicationName = "test-" + System.currentTimeMillis();
+        applicationName =
+                getClass().getSimpleName() + "-" + System.currentTimeMillis();
         nameProvider = new DiscoveryNameProvider(applicationName);
         defaultBroker = new MessageBroker(nameProvider);
         defaultPubSub = new ActivemqPubSub();

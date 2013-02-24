@@ -9,7 +9,7 @@ import java.util.concurrent.Semaphore;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import eu.indenica.events.Event;
-import eu.indenica.messaging.TestConnectivity.EventOne;
+import eu.indenica.messaging.ConnectivityTest.EventOne;
 
 /**
  * @author Christian Inzinger

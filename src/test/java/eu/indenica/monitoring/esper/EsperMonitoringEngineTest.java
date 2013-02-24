@@ -41,7 +41,7 @@ import eu.indenica.monitoring.MonitoringQueryImpl;
  * 
  * @author Christian Inzinger
  */
-public class TestEsperMonitoringEngine {
+public class EsperMonitoringEngineTest {
     private static Logger LOG = LoggerFactory.getLogger();
     private Semaphore msgWaitLock;
     private DiscoveryNameProvider nameProvider;
@@ -61,7 +61,8 @@ public class TestEsperMonitoringEngine {
     public void setUp() throws Exception {
         msgWaitLock = new Semaphore(0);
         nameProvider =
-                new DiscoveryNameProvider("test-" + System.currentTimeMillis());
+                new DiscoveryNameProvider(getClass()
+                        .getSimpleName() + "-" + System.currentTimeMillis());
         broker = new MessageBroker(nameProvider);
         pubSub = new ActivemqPubSub();
         nodeName = "test-node-" + System.currentTimeMillis();
