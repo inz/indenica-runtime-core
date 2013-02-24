@@ -26,6 +26,7 @@ import eu.indenica.common.ActivemqPubSub;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.common.TestUtils;
+import eu.indenica.common.TestUtils.EventOne;
 import eu.indenica.events.Event;
 
 /**
@@ -44,42 +45,6 @@ public class ConnectivityTest {
         }
     }
 
-    /**
-     * A sample Event
-     * 
-     * @author Christian Inzinger
-     */
-    public static class EventOne extends Event {
-        private static final long serialVersionUID = 2114845083753269316L;
-        private static final long typeId = System.currentTimeMillis();
-        private String attr1;
-        private int anAttribute;
-
-        public EventOne() {
-            super("test.EventOne." + typeId);
-        }
-
-        public void setAttr1(String attr1) {
-            this.attr1 = attr1;
-        }
-
-        public void setAnAttribute(int anAttribute) {
-            this.anAttribute = anAttribute;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return new StringBuilder().append("#<")
-                    .append(getClass().getName()).append(": ")
-                    .append("attr1: ").append(attr1).append(", anAttribute: ")
-                    .append(anAttribute).append(">").toString();
-        }
-    }
 
     private String applicationName;
     private DiscoveryNameProvider nameProvider;
