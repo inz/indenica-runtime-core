@@ -75,7 +75,7 @@ public class EsperMonitoringEngineTest {
 
     @After
     public void tearDown() throws Exception {
-        msgWaitLock.drainPermits();
+        assertThat(msgWaitLock.drainPermits(), is(0));
         monitoringEngine.destroy();
         pubSub.destroy();
         broker.destroy();
