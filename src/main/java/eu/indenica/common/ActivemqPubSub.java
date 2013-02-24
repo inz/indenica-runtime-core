@@ -72,19 +72,6 @@ public class ActivemqPubSub implements PubSub, EventListener {
         connection.close();
     }
 
-    /**
-     * @see java.lang.Object#finalize()
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            destroy();
-        } catch(JMSException e) {
-            LOG.error("Could not close connection!", e);
-        }
-        super.finalize();
-    }
-
     /*
      * (non-Javadoc)
      * 
