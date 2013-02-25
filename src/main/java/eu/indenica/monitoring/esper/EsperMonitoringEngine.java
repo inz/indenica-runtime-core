@@ -9,6 +9,7 @@ import org.osoa.sca.annotations.Init;
 import org.osoa.sca.annotations.Property;
 import org.slf4j.Logger;
 
+import com.espertech.esper.client.EPException;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
@@ -201,9 +202,14 @@ public class EsperMonitoringEngine implements MonitoringEngine,
      *            the query to be added
      */
     private void addStatement(MonitoringQuery query) {
-        epService.getEPAdministrator()
-                .createEPL(query.getStatement(), query.getName())
-                .addListener(this);
+        try {
+            epService.getEPAdministrator()
+                    .createEPL(query.getStatement(), query.getName())
+                    .addListener(this);
+        } catch(EPException e) {
+            LOG.error("Could not add query!", e);
+            throw e;
+        }
     }
 
     /**
