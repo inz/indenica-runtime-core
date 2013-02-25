@@ -72,7 +72,7 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
     /**
      * @param rule
      */
-    private void addRule(final FactRule rule) {
+    public void addRule(final FactRule rule) {
         LOG.info("Adding rule {}", rule);
         registerInputEventTypes(rule);
         addStatement(rule);
@@ -148,7 +148,9 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
         epService.getEPRuntime().sendEvent(event);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see eu.indenica.common.RuntimeComponent#setHostName(java.lang.String)
      */
     @Override
