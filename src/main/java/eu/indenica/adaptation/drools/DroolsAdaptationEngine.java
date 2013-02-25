@@ -107,7 +107,7 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
         knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
 
-        setGlobal("publisher", this);
+        setGlobal("engine", this);
         if(rules != null)
             for(AdaptationRule rule : rules)
                 addRule(rule);

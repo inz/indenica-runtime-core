@@ -71,7 +71,7 @@ public class DroolsAdaptationEngineTest {
         DroolsAdaptationEngine engine = new DroolsAdaptationEngine();
         engine.setGlobal("ruleFiredLock", ruleFiredLock);
         AdaptationRuleImpl ruleOne = new AdaptationRuleImpl();
-        ruleOne.setStatement("global eu.indenica.adaptation.AdaptationEngine publisher;"
+        ruleOne.setStatement("global eu.indenica.adaptation.AdaptationEngine engine;"
                 + "global java.util.concurrent.Semaphore ruleFiredLock;"
                 + "rule SimpleAddedBefore when eval(true) "
                 + "then eu.indenica.common.LoggerFactory.getLogger().info(\"fired!\"); "
@@ -92,7 +92,7 @@ public class DroolsAdaptationEngineTest {
     @Test
     public void testAddSimpleRule() throws Exception {
         AdaptationRuleImpl ruleOne = new AdaptationRuleImpl();
-        ruleOne.setStatement("global eu.indenica.adaptation.AdaptationEngine publisher;"
+        ruleOne.setStatement("global eu.indenica.adaptation.AdaptationEngine engine;"
                 + "global java.util.concurrent.Semaphore ruleFiredLock;"
                 + "rule SimpleAddedAfterStart when "
                 + "then eu.indenica.common.LoggerFactory.getLogger().info(\"fired!\"); "
@@ -109,7 +109,7 @@ public class DroolsAdaptationEngineTest {
     @Test
     public void testAddSimpleRuleTriggered() throws Exception {
         AdaptationRuleImpl ruleOne = new AdaptationRuleImpl();
-        ruleOne.setStatement("global eu.indenica.adaptation.AdaptationEngine publisher;"
+        ruleOne.setStatement("global eu.indenica.adaptation.AdaptationEngine engine;"
                 + "global java.util.concurrent.Semaphore ruleFiredLock;"
                 + "rule SimpleWithTrigger when $a : eu.indenica.adaptation.Fact(eventType == \"factOne\") "
                 + "then eu.indenica.common.LoggerFactory.getLogger().info(\"got event {}\", $a); "
