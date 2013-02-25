@@ -4,6 +4,7 @@
 package eu.indenica.common;
 
 import java.net.URI;
+import java.util.Collection;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -17,6 +18,8 @@ import javax.jms.Topic;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
+
+import com.google.common.collect.Lists;
 
 import eu.indenica.events.Event;
 import eu.indenica.messaging.DiscoveryNameProvider;
@@ -34,6 +37,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
     public final static String pathSeparator = ".";
     private final URI brokerUri;
     private final Connection connection;
+    private final Collection<Session> listenerSessions;
 
     /**
      * Create and start the messaging infrastructure with default settings.
@@ -57,6 +61,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
      */
     protected ActivemqPubSub(URI brokerUri) throws Exception {
         this.brokerUri = brokerUri;
+        listenerSessions = Lists.newArrayList();
         LOG.info("Connecting to {}...", brokerUri);
         ActiveMQConnectionFactory connectionFactory =
                 new ActiveMQConnectionFactory(brokerUri);
@@ -69,6 +74,8 @@ public class ActivemqPubSub implements PubSub, EventListener {
      */
     @Override
     public void destroy() throws JMSException {
+        for(Session session : listenerSessions)
+            session.close();
         connection.close();
     }
 
@@ -145,6 +152,7 @@ public class ActivemqPubSub implements PubSub, EventListener {
             LOG.info("Registering listener for {}...", topicName);
             Session session =
                     connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            listenerSessions.add(session);
             MessageConsumer consumer =
                     session.createConsumer(session.createTopic(topicName));
             consumer.setMessageListener(new MessageListener() {
