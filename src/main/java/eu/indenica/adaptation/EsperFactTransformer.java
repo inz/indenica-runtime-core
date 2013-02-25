@@ -44,8 +44,9 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
         LOG.debug("Starting {}...", getClass().getSimpleName());
         this.pubsub = PubSubFactory.getPubSub();
         epService = EPServiceProviderManager.getDefaultProvider();
-        for(FactRule rule : rules)
-            addRule(rule);
+        if(rules != null)
+            for(FactRule rule : rules)
+                addRule(rule);
         LOG.info("{} started", getClass().getSimpleName());
     }
 
