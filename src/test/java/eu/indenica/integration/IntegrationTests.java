@@ -26,13 +26,17 @@ import eu.indenica.adaptation.Fact;
 import eu.indenica.adaptation.FactTransformer;
 import eu.indenica.adaptation.drools.DroolsAdaptationEngine;
 import eu.indenica.common.LoggerFactory;
+import eu.indenica.common.PubSub;
+import eu.indenica.common.PubSubFactory;
 import eu.indenica.common.TestUtils;
 import eu.indenica.events.Event;
 import eu.indenica.events.EventOne;
+import eu.indenica.events.EventTwo;
 import eu.indenica.messaging.DiscoveryNameProvider;
 import eu.indenica.messaging.MessageBroker;
 import eu.indenica.monitoring.MonitoringEngine;
 import eu.indenica.monitoring.MonitoringQuery;
+import eu.indenica.monitoring.MonitoringQueryImpl;
 import eu.indenica.monitoring.esper.EsperMonitoringEngine;
 
 /**
@@ -50,6 +54,7 @@ public class IntegrationTests {
     private MonitoringEngine monitoringEngine;
     private FactTransformer factTransformer;
     private AdaptationEngine adaptationEngine;
+    private PubSub pubSub;
 
     /**
      */
@@ -73,6 +78,7 @@ public class IntegrationTests {
         msgWaitLock = new Semaphore(0);
         hostName = "test-node-" + System.currentTimeMillis();
         setupBroker();
+        pubSub = PubSubFactory.getPubSub();
         setupPlatformAdapter();
         setupMonitoringEngine();
         setupFactTransformer();
@@ -97,13 +103,15 @@ public class IntegrationTests {
         platformAdapter.setHostName(hostName);
         platformAdapter.setId("platform-" + System.currentTimeMillis());
         platformAdapter.setName("test-platform");
+
         Collection<Class<? extends Event>> emittedEventTypes =
                 Lists.newArrayList();
         emittedEventTypes.add(EventOne.class);
         platformAdapter.setEmittedEventTypes(emittedEventTypes);
+
         platformAdapter.init();
     }
-    
+
     /**
      * @throws Exception
      */
@@ -111,8 +119,22 @@ public class IntegrationTests {
         monitoringEngine = new EsperMonitoringEngine();
         monitoringEngine.setHostName(hostName);
         monitoringEngine.init();
-        
-        // TODO: Add monitoring query!
+
+        {
+            String queryName = "query-" + System.currentTimeMillis();
+            MonitoringQueryImpl query = new MonitoringQueryImpl();
+            query.setName(queryName);
+            query.setInputEventTypes(new String[] { "test-platform,"
+                    + EventOne.class.getCanonicalName() });
+            query.setOutputEventTypes(new String[] { EventTwo.class
+                    .getCanonicalName() });
+            query.setStatement("insert into EventTwo "
+                    + "select attr1 as message from EventOne");
+            monitoringEngine.addQuery(query);
+        }
+
+        TestUtils.createEventListener(pubSub, new EventTwo().getEventType(),
+                null, msgWaitLock);
     }
 
     /**
@@ -122,10 +144,13 @@ public class IntegrationTests {
         factTransformer = new EsperFactTransformer();
         factTransformer.setHostName(hostName);
         factTransformer.init();
-        
+
         // TODO: Add fact transformation query!
+        {
+            
+        }
     }
-    
+
     /**
      * @throws Exception
      */
@@ -135,7 +160,7 @@ public class IntegrationTests {
         ((DroolsAdaptationEngine) adaptationEngine).setGlobal("lock",
                 msgWaitLock);
         adaptationEngine.init();
-        
+
         // TODO: Add adaptation rule!
     }
 
@@ -148,6 +173,7 @@ public class IntegrationTests {
         factTransformer.destroy();
         monitoringEngine.destroy();
         platformAdapter.destroy();
+        pubSub.destroy();
         broker.destroy();
         assertThat(msgWaitLock.drainPermits(), is(0));
     }
@@ -169,21 +195,25 @@ public class IntegrationTests {
         EventOne event = new EventOne();
         event.setAttr1("message-" + System.currentTimeMillis());
         platformAdapter.emitEvent(event);
-        
+
         LOG.info("Wait for monitoring query to receive event...");
-        assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
+        assertThat("Message from platform not received!",
+                msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
 
         LOG.info("Fact transformer receives event from query...");
-        assertThat("nothing", is("implemented"));
+        assertThat("Message from monitoring query not received!", "nothing",
+                is("implemented"));
 
         LOG.info("Fact is provided to adaptation rule...");
-        assertThat("nothing", is("implemented"));
+        assertThat("Message from fact transformer not received!", "nothing",
+                is("implemented"));
 
         LOG.info("Adaptation rule performs action...");
         assertThat("nothing", is("implemented"));
 
         LOG.info("Platform receives adaptation action event.");
-        assertThat("nothing", is("implemented"));
+        assertThat("Platform did not receive adaptation action!", "nothing",
+                is("implemented"));
     }
 
 }
