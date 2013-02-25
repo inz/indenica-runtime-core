@@ -19,6 +19,7 @@ import eu.indenica.adaptation.AdaptationEngine;
 import eu.indenica.adaptation.AdaptationRuleImpl;
 import eu.indenica.adaptation.Fact;
 import eu.indenica.common.TestUtils;
+import eu.indenica.events.EventOne;
 import eu.indenica.messaging.DiscoveryNameProvider;
 import eu.indenica.messaging.MessageBroker;
 
@@ -116,7 +117,7 @@ public class DroolsAdaptationEngineTest {
                 + "ruleFiredLock.release();" + " end");
         adaptationEngine.addRule(ruleOne);
         Fact fact = new Fact("factOne");
-        TestUtils.EventOne event = new TestUtils.EventOne();
+        EventOne event = new EventOne();
         event.setAttr1("one");
         fact.setEvent(event);
         adaptationEngine.eventReceived(null, fact);

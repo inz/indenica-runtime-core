@@ -26,8 +26,8 @@ import eu.indenica.common.ActivemqPubSub;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.common.TestUtils;
-import eu.indenica.common.TestUtils.EventOne;
 import eu.indenica.events.Event;
+import eu.indenica.events.EventOne;
 
 /**
  * Messaging Fabric test suite.

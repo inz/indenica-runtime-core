@@ -9,29 +9,33 @@ package eu.indenica.events;
  * @author Christian Inzinger
  */
 public class EventOne extends Event {
-    private static final long serialVersionUID = 3402115269434670223L;
+    private static final long serialVersionUID = 2114845083753269316L;
     private static final long typeId = System.currentTimeMillis();
-    private String message;
+    private String attr1;
+    private int anAttribute;
 
     public EventOne() {
         super("test.EventOne." + typeId);
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setAttr1(String attr1) {
+        this.attr1 = attr1;
     }
 
-    public String getMessage() {
-        return message;
+    public void setAnAttribute(int anAttribute) {
+        this.anAttribute = anAttribute;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("EventOne [message=").append(message).append("]");
-        return builder.toString();
+        return new StringBuilder().append("#<")
+                .append(getClass().getName()).append(": ")
+                .append("attr1: ").append(attr1).append(", anAttribute: ")
+                .append(anAttribute).append(">").toString();
     }
 }

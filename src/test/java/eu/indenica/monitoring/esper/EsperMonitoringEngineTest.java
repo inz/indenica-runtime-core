@@ -28,7 +28,7 @@ import eu.indenica.common.ActivemqPubSub;
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
 import eu.indenica.events.Event;
-import eu.indenica.events.EventOne;
+import eu.indenica.events.EventTwo;
 import eu.indenica.messaging.DiscoveryNameProvider;
 import eu.indenica.messaging.ManagementClient;
 import eu.indenica.messaging.MessageBroker;
@@ -91,13 +91,13 @@ public class EsperMonitoringEngineTest {
     @Test
     public void testAddSimpleQuery() throws Exception {
         String queryName = addSimpleQueryForEventOne();
-        EventOne event = null;
+        Event event = null;
 
-        createEventListener(pubSub, queryName, new EventOne().getEventType(),
+        createEventListener(pubSub, queryName, new EventTwo().getEventType(),
                 observedEvents, msgWaitLock);
 
         LOG.info("Sending event...");
-        event = sendEventOneToSimpleQuery("message");
+        event = sendEventTwoToSimpleQuery("message");
         verifyEventObserved(observedEvents, event);
     }
 
@@ -110,23 +110,23 @@ public class EsperMonitoringEngineTest {
     @Test
     public void testClientManageSimpleQuery() throws Exception {
         String queryName = addSimpleQueryForEventOne();
-        EventOne event = null;
+        Event event = null;
 
-        createEventListener(pubSub, queryName, new EventOne().getEventType(),
+        createEventListener(pubSub, queryName, new EventTwo().getEventType(),
                 observedEvents, msgWaitLock);
 
         LOG.info("Deactivating query...");
         monitoringEngine.stopQuery(queryName);
 
         LOG.info("Sending event...");
-        event = sendEventOneToSimpleQuery("should not arrive");
+        event = sendEventTwoToSimpleQuery("should not arrive");
         verifyEventNotObserved(observedEvents, event);
 
         LOG.info("Activating query...");
         monitoringEngine.startQuery(queryName);
 
         LOG.info("Sending event...");
-        event = sendEventOneToSimpleQuery("should arrive");
+        event = sendEventTwoToSimpleQuery("should arrive");
         verifyEventObserved(observedEvents, event);
     }
 
@@ -139,9 +139,9 @@ public class EsperMonitoringEngineTest {
     @Test
     public void testMgmtClientManageSimpleQuery() throws Exception {
         String queryName = addSimpleQueryForEventOne();
-        EventOne event = null;
+        Event event = null;
 
-        createEventListener(pubSub, queryName, new EventOne().getEventType(),
+        createEventListener(pubSub, queryName, new EventTwo().getEventType(),
                 observedEvents, msgWaitLock);
 
         {
@@ -154,7 +154,7 @@ public class EsperMonitoringEngineTest {
         }
 
         LOG.info("Sending event...");
-        event = sendEventOneToSimpleQuery("should not arrive");
+        event = sendEventTwoToSimpleQuery("should not arrive");
         verifyEventNotObserved(observedEvents, event);
 
         {
@@ -167,7 +167,7 @@ public class EsperMonitoringEngineTest {
         }
 
         LOG.info("Sending event...");
-        event = sendEventOneToSimpleQuery("should arrive");
+        event = sendEventTwoToSimpleQuery("should arrive");
         verifyEventObserved(observedEvents, event);
     }
 
@@ -177,7 +177,7 @@ public class EsperMonitoringEngineTest {
      * @throws InterruptedException
      */
     private void verifyEventNotObserved(Collection<Event> observedEvents,
-            EventOne event) throws InterruptedException {
+            Event event) throws InterruptedException {
         LOG.trace("Verifying that event did not arrive...");
         assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(false));
         assertThat(observedEvents, not(hasItem((Event) event)));
@@ -190,8 +190,8 @@ public class EsperMonitoringEngineTest {
      * @throws InterruptedException
      */
     private void verifyEventObserved(Collection<Event> observedEvents,
-            EventOne event) throws InterruptedException {
-        LOG.trace("Verifying if event arrived...");
+            Event event) throws InterruptedException {
+        LOG.trace("Verifying that event arrived...");
         assertThat(msgWaitLock.tryAcquire(2, TimeUnit.SECONDS), is(true));
         assertThat(observedEvents, hasItem((Event) event));
     }
@@ -199,8 +199,8 @@ public class EsperMonitoringEngineTest {
     /**
      * @return
      */
-    private EventOne sendEventOneToSimpleQuery(String message) {
-        EventOne event = new EventOne();
+    private Event sendEventTwoToSimpleQuery(String message) {
+        EventTwo event = new EventTwo();
         event.setMessage(message + " " + System.currentTimeMillis());
         pubSub.publish("input", event);
         return event;
@@ -215,10 +215,10 @@ public class EsperMonitoringEngineTest {
         MonitoringQueryImpl query = new MonitoringQueryImpl();
         query.setName(queryName);
         query.setInputEventTypes(new String[] { "input,"
-                + EventOne.class.getCanonicalName() });
-        query.setOutputEventTypes(new String[] { EventOne.class
+                + EventTwo.class.getCanonicalName() });
+        query.setOutputEventTypes(new String[] { EventTwo.class
                 .getCanonicalName() });
-        query.setStatement("select * from EventOne");
+        query.setStatement("select * from EventTwo");
         monitoringEngine.addQuery(query);
         return queryName;
     }
