@@ -68,7 +68,7 @@ public class EsperMonitoringEngineTest {
         nodeName = "test-node-" + System.currentTimeMillis();
         mgmtClient = new ManagementClient(nodeName, "test-mgmt");
         monitoringEngine = new EsperMonitoringEngine();
-        ((EsperMonitoringEngine) monitoringEngine).setHostName(nodeName);
+        monitoringEngine.setHostName(nodeName);
         monitoringEngine.init();
         observedEvents = Lists.newArrayList();
     }

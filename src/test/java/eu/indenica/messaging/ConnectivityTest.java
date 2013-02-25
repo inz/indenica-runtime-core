@@ -81,7 +81,7 @@ public class ConnectivityTest {
     @After
     public void tearDown() throws Exception {
         observedEvents.clear();
-        msgWaitLock.drainPermits();
+        assertThat(msgWaitLock.drainPermits(), is(0));
         defaultPubSub.destroy();
         defaultBroker.destroy();
     }
