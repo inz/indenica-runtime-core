@@ -82,6 +82,14 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
     /**
      * @return the emittedEventTypes
      */
+    public void setEmittedEventTypes(
+            Collection<Class<? extends Event>> emittedEventTypes) {
+        this.emittedEventTypes = emittedEventTypes;
+    }
+
+    /**
+     * @return the emittedEventTypes
+     */
     public Collection<Class<? extends Event>> getEmittedEventTypes() {
         return emittedEventTypes;
     }
@@ -177,7 +185,9 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
 
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see eu.indenica.common.RuntimeComponent#setHostName(java.lang.String)
      */
     @Override
