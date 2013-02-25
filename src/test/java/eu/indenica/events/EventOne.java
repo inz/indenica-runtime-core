@@ -18,12 +18,32 @@ public class EventOne extends Event {
         super("test.EventOne." + typeId);
     }
 
+    /**
+     * @param attr1
+     */
     public void setAttr1(String attr1) {
         this.attr1 = attr1;
     }
+    
+    /**
+     * @return the attr1
+     */
+    public String getAttr1() {
+        return attr1;
+    }
 
+    /**
+     * @param anAttribute
+     */
     public void setAnAttribute(int anAttribute) {
         this.anAttribute = anAttribute;
+    }
+    
+    /**
+     * @return the anAttribute
+     */
+    public int getAnAttribute() {
+        return anAttribute;
     }
 
     /*

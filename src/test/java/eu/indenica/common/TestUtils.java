@@ -92,7 +92,8 @@ public class TestUtils {
             public void eventReceived(String source, Event event) {
                 LOG.debug("{} - Received event {} in {} from {}", new Object[] {
                         caller, event, pubSub, source });
-                observedEvents.add(event);
+                if(observedEvents != null)
+                    observedEvents.add(event);
                 msgWaitLock.release();
             }
         }, source, eventType);
