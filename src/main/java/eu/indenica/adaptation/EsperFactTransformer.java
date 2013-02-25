@@ -36,6 +36,8 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
     private EPServiceProvider epService;
     private FactRule[] rules;
 
+    private String hostName;
+
     @Init
     @Override
     public void init() throws Exception {
@@ -143,5 +145,13 @@ public class EsperFactTransformer implements FactTransformer, UpdateListener {
     public void eventReceived(String source, Event event) {
         LOG.debug("Event {} received from {}", event, source);
         epService.getEPRuntime().sendEvent(event);
+    }
+
+    /* (non-Javadoc)
+     * @see eu.indenica.common.RuntimeComponent#setHostName(java.lang.String)
+     */
+    @Override
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 }

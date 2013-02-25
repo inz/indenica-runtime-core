@@ -13,7 +13,7 @@ import eu.indenica.common.RuntimeComponent;
  * @author Christian Inzinger
  */
 public interface MonitoringEngine extends RuntimeComponent, EventListener {
-    static String SERVICE_NAME = "monitoring";
+    String SERVICE_NAME = "monitoring";
 
     /**
      * Add a {@link MonitoringQuery} to the monitoring engine and start it.

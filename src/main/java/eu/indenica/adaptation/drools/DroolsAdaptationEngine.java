@@ -1,11 +1,16 @@
 package eu.indenica.adaptation.drools;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
 
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
@@ -31,6 +36,8 @@ import eu.indenica.common.PubSub;
 import eu.indenica.common.PubSubFactory;
 import eu.indenica.events.ActionEvent;
 import eu.indenica.events.Event;
+import eu.indenica.messaging.ManagementClient;
+import eu.indenica.messaging.ManagementNameProvider;
 
 //@Scope("COMPOSITE")
 //@EagerInit
@@ -50,6 +57,10 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
     @Property
     protected String[] inputEventTypes;
+
+    private String hostName;
+
+    private ManagementClient mgmtClient;
 
     // /**
     // * @param rules
@@ -123,6 +134,14 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
                 return null;
             }
         });
+
+        if(hostName == null) {
+            hostName = java.net.InetAddress.getLocalHost().getHostName();
+            LOG.warn("Node name not set, using hostname ({}).", hostName);
+        }
+        mgmtClient = new ManagementClient(hostName, SERVICE_NAME);
+        registerManagementListener();
+
         LOG.debug("Adaptation Engine started.");
     }
 
@@ -249,5 +268,77 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
             }
         }.call();
 
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see eu.indenica.common.RuntimeComponent#setHostName(java.lang.String)
+     */
+    @Override
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    /**
+     * Registers a control interface listener with the messaging fabric.
+     * 
+     * <p>
+     * This allows for the addition and removal of rules at runtime.
+     * 
+     * <p>
+     * Control messages must be sent to the appropriate queue. The queue name is
+     * designed as follows:
+     * 
+     * <pre>
+     *   {@code <prefix>.<node-name>.<service-name>}
+     * </pre>
+     * 
+     * <ul>
+     * <li> {@code <prefix>} is the control infrastructure queue name prefix,
+     * {@link ManagementNameProvider#MANAGEMENT_PREFIX}
+     * <li> {@code <node-name>} is the node name assigned by the runtime
+     * configuration, or the current machine's host name if no node name was set
+     * <li> {@code <service-name>} is {@code monitoring}
+     * </ul>
+     * 
+     * @throws JMSException
+     *             if something goes wrong
+     */
+    private void registerManagementListener() throws JMSException {
+        LOG.debug("Connecting management listener...");
+        mgmtClient.registerListener(new MessageListener() {
+            @Override
+            public void onMessage(Message message) {
+                String command = null;
+                AdaptationRuleImpl rule = new AdaptationRuleImpl();
+                try {
+                    LOG.debug("Received message {}", message);
+                    command = message.getStringProperty("command");
+//                    ruleName = message.getStringProperty("ruleName");
+                    String stmt = message.getStringProperty("ruleStatement");
+                    @SuppressWarnings("unchecked")
+                    List<String> inputEventTypes =
+                            (List<String>) message
+                                    .getObjectProperty("ruleInputEventTypes");
+                    rule.setStatement(stmt);
+                    if(inputEventTypes != null)
+                        rule.setInputEventTypes(inputEventTypes
+                                .toArray(new String[inputEventTypes.size()]));
+                } catch(JMSException e) {
+                    LOG.error("Error processing message!", e);
+                } catch(ClassCastException e) {
+                    LOG.error("Received object was not an adaptation rule!", e);
+                }
+
+                if("addRule".equals(command)) {
+                    addRule(rule);
+                } else if("removeRule".equals(command)) {
+                    // removeRule(rule);
+                } else {
+                    LOG.error("Could not understand message {}", message);
+                }
+            }
+        });
     }
 }

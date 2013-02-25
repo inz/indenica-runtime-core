@@ -33,6 +33,7 @@ import eu.indenica.repository.Query;
 public class SampleInMemoryRepository extends AbstractRepository {
     private final static Logger LOG = LoggerFactory.getLogger();
     protected Collection<String> store = Lists.newArrayList();
+    private String hostName;
 
     /*
      * (non-Javadoc)
@@ -69,6 +70,14 @@ public class SampleInMemoryRepository extends AbstractRepository {
     @Override
     public void delete(String id) {
         store.remove(id);
+    }
+
+    /* (non-Javadoc)
+     * @see eu.indenica.common.RuntimeComponent#setHostName(java.lang.String)
+     */
+    @Override
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
 }

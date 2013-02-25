@@ -56,6 +56,7 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
     @Reference
     protected WireFormatAdapter wireStrategy;
     private PubSub pubSub = PubSubFactory.getPubSub();
+    private String hostName;
 
     /*
      * (non-Javadoc)
@@ -174,6 +175,14 @@ public class PlatformAdapter implements RuntimeComponent, EventEmitter,
     public void eventReceived(String source, Event event) {
         // TODO Auto-generated method stub
 
+    }
+
+    /* (non-Javadoc)
+     * @see eu.indenica.common.RuntimeComponent#setHostName(java.lang.String)
+     */
+    @Override
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
 }
