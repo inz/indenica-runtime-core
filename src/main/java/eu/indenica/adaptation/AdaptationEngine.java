@@ -12,6 +12,8 @@ import eu.indenica.events.ActionEvent;
  * 
  */
 public interface AdaptationEngine extends RuntimeComponent, EventListener {
+    String SERVICE_NAME = "adaptation";
+    
     void addRule(AdaptationRule rule);
 
     void setFact(Fact fact);
