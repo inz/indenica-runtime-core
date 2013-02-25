@@ -1,5 +1,7 @@
 package eu.indenica.monitoring.esper;
 
+import java.util.Arrays;
+
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -15,6 +17,7 @@ import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.StatementAwareUpdateListener;
+import com.google.common.collect.ImmutableSet;
 
 import eu.indenica.common.LoggerFactory;
 import eu.indenica.common.PubSub;
@@ -165,7 +168,7 @@ public class EsperMonitoringEngine implements MonitoringEngine,
     @Override
     public void addQuery(MonitoringQuery query) {
         LOG.info("Adding query {}", query);
-        registerInputEventTypes(query);
+        registerEventTypes(query);
         addStatement(query);
     }
 
@@ -213,35 +216,61 @@ public class EsperMonitoringEngine implements MonitoringEngine,
     }
 
     /**
-     * Register all input event types of the given {@link MonitoringQuery}.
+     * Register all input and output event types of the given
+     * {@link MonitoringQuery}.
      * 
      * @param query
-     *            the query to register input event types for
+     *            the query to register event types for
      */
-    private void registerInputEventTypes(MonitoringQuery query) {
-        for(String eventType : query.getInputEventTypes()) {
-            String source = null;
-            if(eventType.contains(",")) {
-                String[] split = eventType.split(",", 2);
-                eventType = split[1].trim();
-                source = split[0].trim();
-                LOG.trace("Found source: {}", source);
-            }
+    private void registerEventTypes(MonitoringQuery query) {
+        ImmutableSet<String> inputEventTypes =
+                ImmutableSet.<String> builder()
+                        .addAll(Arrays.asList(query.getInputEventTypes()))
+                        .build();
+        Iterable<String> eventTypes =
+                ImmutableSet.<String> builder().addAll(inputEventTypes)
+                        .addAll(Arrays.asList(query.getOutputEventTypes()))
+                        .build();
 
-            try {
-                Class<?> eventTypeClass = Class.forName(eventType);
-                LOG.info("Loaded class {}", eventTypeClass);
-                epService.getEPAdministrator().getConfiguration()
-                        .addEventType(eventTypeClass);
-                epService.getEPAdministrator().getConfiguration()
-                        .addImport(eventTypeClass);
+        for(String eventType : eventTypes) {
+            registerEventType(eventType, inputEventTypes.contains(eventType));
+        }
+    }
 
+    /**
+     * Register the specified event type with the Esper runtime. If an input
+     * event is specified, a listener is registered with the messaging fabric.
+     * 
+     * @param eventType
+     *            the event type to be registered, in the form [{@code source},]
+     *            {@code eventType}.
+     * @param isInputEventType
+     *            if {@code true} an event listener is registered with the
+     *            messaging fabric
+     */
+    private void registerEventType(String eventType, boolean isInputEventType) {
+        String source = null;
+        if(eventType.contains(",")) {
+            String[] split = eventType.split(",", 2);
+            eventType = split[1].trim();
+            source = split[0].trim();
+            LOG.trace("Found source: {}", source);
+        }
+
+        try {
+            Class<?> eventTypeClass = Class.forName(eventType);
+            LOG.info("Loaded class {}", eventTypeClass);
+            epService.getEPAdministrator().getConfiguration()
+                    .addEventType(eventTypeClass);
+            epService.getEPAdministrator().getConfiguration()
+                    .addImport(eventTypeClass);
+
+            if(isInputEventType)
                 pubSub.registerListener(this, source,
                         ((Event) eventTypeClass.newInstance()).getEventType());
-            } catch(Exception e) {
-                LOG.warn("Error registering event type {}!", eventType);
-                LOG.warn("Something went wrong!", e);
-            }
+        } catch(Exception e) {
+            LOG.error("Error registering event type '{}'!", eventType);
+            LOG.error("Something went wrong!", e);
         }
     }
 
