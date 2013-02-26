@@ -23,6 +23,8 @@ import eu.indenica.adaptation.AdaptationEngine;
 import eu.indenica.adaptation.AdaptationRule;
 import eu.indenica.adaptation.EsperFactTransformer;
 import eu.indenica.adaptation.Fact;
+import eu.indenica.adaptation.FactRule;
+import eu.indenica.adaptation.FactRuleImpl;
 import eu.indenica.adaptation.FactTransformer;
 import eu.indenica.adaptation.drools.DroolsAdaptationEngine;
 import eu.indenica.common.LoggerFactory;
@@ -32,6 +34,7 @@ import eu.indenica.common.TestUtils;
 import eu.indenica.events.Event;
 import eu.indenica.events.EventOne;
 import eu.indenica.events.EventTwo;
+import eu.indenica.facts.FactOne;
 import eu.indenica.messaging.DiscoveryNameProvider;
 import eu.indenica.messaging.MessageBroker;
 import eu.indenica.monitoring.MonitoringEngine;
@@ -147,7 +150,14 @@ public class IntegrationTests {
 
         // TODO: Add fact transformation query!
         {
-            
+            FactRuleImpl factRule = new FactRuleImpl();
+            factRule.setInputEventTypes(new String[] { EventTwo.class
+                    .getCanonicalName() });
+            factRule.setOutputEventTypes(new String[] { FactOne.class
+                    .getCanonicalName() });
+            factRule.setStatement("insert into FactOne " +
+            		"select message as status from EventTwo");
+            factTransformer.addRule(factRule);
         }
     }
 
