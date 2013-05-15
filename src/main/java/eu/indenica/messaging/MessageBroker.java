@@ -129,7 +129,7 @@ public class MessageBroker {
     /**
      * This method finds a free port on the machine.
      * 
-     * <b>NOTE:</b> There is a possible race condition here!
+     * <p><b>NOTE:</b> There is a possible race condition here!
      * 
      * @return a free port
      */
