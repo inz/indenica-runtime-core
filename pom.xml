@@ -25,9 +25,10 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<drools.version>5.4.0.Final</drools.version>
-		<activemq.version>5.7.0</activemq.version>
-		<guava.version>13.0.1</guava.version>
+		<drools.version>5.5.0.Final</drools.version>
+		<activemq.version>5.8.0</activemq.version>
+		<guava.version>15.0</guava.version>
+		<esper.version>4.9.0</esper.version>
 	</properties>
 
 	<dependencies>
@@ -137,7 +138,7 @@
 		<dependency>
 			<groupId>com.espertech</groupId>
 			<artifactId>esper</artifactId>
-			<version>4.3.0</version>
+			<version>${esper.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -162,7 +163,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-core</artifactId>
+			<artifactId>activemq-broker</artifactId>
+			<version>${activemq.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
 			<version>${activemq.version}</version>
 		</dependency>
 		<dependency>
