@@ -31,6 +31,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <github.global.server>github</github.global.server>
 		<drools.version>5.5.0.Final</drools.version>
 		<activemq.version>5.7.0</activemq.version>
 		<guava.version>15.0</guava.version>
