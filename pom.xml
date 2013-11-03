@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.indenica.runtime</groupId>
@@ -32,6 +31,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <github.global.server>github</github.global.server>
+    <deploy.targetRepository>${project.build.directory}/mvn-snapshots</deploy.targetRepository>
+    <deploy.repositoryName>snapshots</deploy.repositoryName>
 		<drools.version>5.5.0.Final</drools.version>
 		<activemq.version>5.7.0</activemq.version>
 		<guava.version>15.0</guava.version>
@@ -42,7 +43,7 @@
 		<dependency>
 			<groupId>eu.indenica.runtime</groupId>
 			<artifactId>interfaces</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.1.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -220,17 +221,18 @@
 					</execution>
 				</executions>
 			</plugin>
-      <!-- <plugin>
+      <plugin>
           <groupId>com.github.github</groupId>
           <artifactId>site-maven-plugin</artifactId>
           <version>0.9</version>
           <configuration>
             <message>Maven artifacts for ${project.version}</message>
             <noJekyll>true</noJekyll>
-            <outputDirectory>${project.build.directory}/mvn-releases</outputDirectory>
+            <outputDirectory>${deploy.targetRepository}</outputDirectory>
             <branch>refs/heads/mvn</branch>
+            <merge>true</merge>
             <includes><include>**/*</include></includes>
-            <repositoryName>releases</repositoryName>
+            <repositoryName>${deploy.repositoryName}</repositoryName>
             <repositoryOwner>indenicatuv</repositoryOwner>
           </configuration>
           <executions>
@@ -241,7 +243,7 @@
               <phase>deploy</phase>
             </execution>
           </executions>
-      </plugin> -->
+      </plugin>
 		</plugins>
 	</build>
 	<reporting>
@@ -282,14 +284,14 @@
 		</repository>
 		<repository>
 			<id>indenica-tuv-snapshots</id>
-			<url>https://raw.github.com/indenicatuv/snapshots/master/</url>
+			<url>https://raw.github.com/indenicatuv/snapshots/mvn/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 		<repository>
 			<id>indenica-tuv-releases</id>
-			<url>https://raw.github.com/indenicatuv/releases/master/</url>
+			<url>https://raw.github.com/indenicatuv/releases/mvn/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -301,15 +303,17 @@
 		<system>jenkins</system>
 	</ciManagement>
 
+  <profiles>
+    <profile>
+      <id>release</id>
+      <properties>
+        <deploy.targetRepository>${project.build.directory}/mvn-releases</deploy.targetRepository>
+        <deploy.repositoryName>releases</deploy.repositoryName>
+      </properties>
+    </profile>
+  </profiles>
+
 	<distributionManagement>
-    <!-- <repository>
-      <id>indenica-tuv-releases</id>
-      <url>file:///${project.basedir}/../../github/releases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>indenica-tuv-snapshots</id>
-      <url>file:///${project.basedir}/../../github/snapshots/</url>
-    </snapshotRepository> -->
     <repository>
       <id>internal.release</id>
       <name>Temporary Staging Repository</name>
