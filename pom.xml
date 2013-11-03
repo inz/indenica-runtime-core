@@ -4,7 +4,7 @@
 
 	<groupId>eu.indenica.runtime</groupId>
 	<artifactId>core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>VSP Runtime Core</name>
@@ -22,6 +22,12 @@
 			</comments>
 		</license>
 	</licenses>
+  
+  <scm>
+    <url>https://github.com/inz/indenica-runtime-core</url>
+    <connection>scm:git:git://github.com/inz/indenica-runtime-core.git</connection>
+    <developerConnection>scm:git:git@github.com:inz/indenica-runtime-core.git</developerConnection>
+  </scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -213,6 +219,28 @@
 					</execution>
 				</executions>
 			</plugin>
+      <!-- <plugin>
+          <groupId>com.github.github</groupId>
+          <artifactId>site-maven-plugin</artifactId>
+          <version>0.9</version>
+          <configuration>
+            <message>Maven artifacts for ${project.version}</message>
+            <noJekyll>true</noJekyll>
+            <outputDirectory>${project.build.directory}/mvn-releases</outputDirectory>
+            <branch>refs/heads/mvn</branch>
+            <includes><include>**/*</include></includes>
+            <repositoryName>releases</repositoryName>
+            <repositoryOwner>indenicatuv</repositoryOwner>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>site</goal>
+              </goals>
+              <phase>deploy</phase>
+            </execution>
+          </executions>
+      </plugin> -->
 		</plugins>
 	</build>
 	<reporting>
@@ -273,13 +301,23 @@
 	</ciManagement>
 
 	<distributionManagement>
-		<repository>
-			<id>indenica-tuv-releases</id>
-			<url>file:///${project.basedir}/../../github/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>indenica-tuv-snapshots</id>
-			<url>file:///${project.basedir}/../../github/snapshots/</url>
-		</snapshotRepository>
+    <!-- <repository>
+      <id>indenica-tuv-releases</id>
+      <url>file:///${project.basedir}/../../github/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>indenica-tuv-snapshots</id>
+      <url>file:///${project.basedir}/../../github/snapshots/</url>
+    </snapshotRepository> -->
+    <repository>
+      <id>internal.release</id>
+      <name>Temporary Staging Repository</name>
+      <url>file://${project.build.directory}/mvn-releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>internal.release</id>
+      <name>Temporary Staging Repository</name>
+      <url>file://${project.build.directory}/mvn-snapshots</url>
+    </snapshotRepository>
 	</distributionManagement>
 </project>
