@@ -21,16 +21,18 @@
 		<property name="queries" many="true" type="m:MonitoringQueryImpl">
 			<MonitoringQueryImpl xmlns="">
 				<inputEventTypes>testPkg.EventOne</inputEventTypes>
+				<outputEventTypes>testPkg.Foo</outputEventTypes>
 				<statement>
 					insert into Foo
-							 select attr1 from EventOne
+							 select attr1 as a1 from EventOne
 				</statement>
 			</MonitoringQueryImpl>
 			<MonitoringQueryImpl xmlns="">
 				<inputEventTypes>testPkg.EventOne</inputEventTypes>
+				<outputEventTypes>testPkg.Foo</outputEventTypes>
 				<statement><![CDATA[
 					insert into Foo
-							 select attr1 from EventOne
+							 select attr1 as a1 from EventOne
 				]]></statement>
 			</MonitoringQueryImpl>
 		</property>
