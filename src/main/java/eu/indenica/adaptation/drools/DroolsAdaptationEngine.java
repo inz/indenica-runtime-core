@@ -257,12 +257,12 @@ public class DroolsAdaptationEngine implements AdaptationEngine {
 
     public void performAction(ActionEvent actionEvent) {
         LOG.info("Perform action {}", actionEvent);
-        pubsub.publish(this.getClass().getName(), actionEvent);
+        pubsub.publish(this.getClass().getSimpleName(), actionEvent);
     }
 
     public void publishEvent(final Event event) throws Exception {
         LOG.info("Publishing event {}", event);
-        final String component = this.getClass().getName();
+        final String component = this.getClass().getSimpleName();
         new Callable<Void>() {
             public Void call() throws Exception {
                 pubsub.publish(component, event);
