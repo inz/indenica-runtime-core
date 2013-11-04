@@ -20,8 +20,10 @@ import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
 import org.osoa.sca.annotations.Destroy;
+import org.osoa.sca.annotations.EagerInit;
 import org.osoa.sca.annotations.Init;
 import org.osoa.sca.annotations.Property;
+import org.osoa.sca.annotations.Scope;
 import org.slf4j.Logger;
 
 import com.google.common.base.Charsets;
@@ -39,8 +41,8 @@ import eu.indenica.events.Event;
 import eu.indenica.messaging.ManagementClient;
 import eu.indenica.messaging.ManagementNameProvider;
 
-//@Scope("COMPOSITE")
-//@EagerInit
+@Scope("COMPOSITE")
+@EagerInit
 public class DroolsAdaptationEngine implements AdaptationEngine {
     private static Logger LOG = LoggerFactory.getLogger();
 
