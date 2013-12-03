@@ -1,12 +1,14 @@
 Indenica Runtime Core
 =====================
 
+[![Build Status](https://travis-ci.org/inz/indenica-runtime-core.png?branch=master)](https://travis-ci.org/inz/indenica-runtime-core)
+
 _description coming soon_
 
 License
 =======
 
-Copyright 2011-2013 Christian Inzinger, Waldemar Hummer, Benjamin Satzger
+Copyright 2011-2013 Christian Inzinger, Waldemar Hummer, Benjamin Satzger, Vienna University of Technology
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this software except in compliance with the License.
